@@ -105,9 +105,9 @@ const Nutrition: React.FC = () => {
 
     return (
         <MemberLayout>
-            <Box p="7" maxW="1100px">
+            <Box p={{ base: '4', md: '7' }} maxW="1100px" w="full" minW="0">
                 {/* Date Header */}
-                <Flex align="center" justify="space-between" mb="6">
+                <Flex align="center" justify="space-between" mb="6" gap="3" flexWrap="wrap">
                     <HStack spacing="3">
                         <IconButton
                             aria-label="Previous day"
@@ -147,6 +147,7 @@ const Nutrition: React.FC = () => {
                         h="38px"
                         px="5"
                         fontSize="13px"
+                        w={{ base: 'full', sm: 'auto' }}
                     />
                 </Flex>
 
@@ -155,7 +156,7 @@ const Nutrition: React.FC = () => {
                     {/* LEFT */}
                     <Stack spacing="5">
                         {/* Calorie + Macros Row */}
-                        <Grid templateColumns={{ base: "repeat(2, 1fr)", md: "1fr 1fr 1fr 1fr" }} gap="3">
+                        <Grid templateColumns={{ base: '1fr', sm: 'repeat(2, minmax(0, 1fr))', md: 'repeat(4, minmax(0, 1fr))' }} gap="3">
                             {/* Calories Donut */}
                             <Box
                                 bg="#141720"
@@ -236,12 +237,12 @@ const Nutrition: React.FC = () => {
                         />
 
                         {/* Food Library */}
-                        <Box bg="#141720" border="1px solid" borderColor="#1e2028" borderRadius="16px" p="6" mt="4">
-                            <Flex justify="space-between" align="center" mb="4">
+                        <Box bg="#141720" border="1px solid" borderColor="#1e2028" borderRadius="16px" p={{ base: '4', sm: '6' }} mt="4">
+                            <Flex justify="space-between" align={{ base: 'stretch', sm: 'center' }} direction={{ base: 'column', sm: 'row' }} gap="3" mb="4">
                                 <Heading fontSize="18px" fontWeight="700" color="white">
                                     Food Library
                                 </Heading>
-                                <Flex align="center" bg="#0A0C10" border="1px solid" borderColor="#1e2028" borderRadius="8px" px="3" py="1">
+                                <Flex align="center" bg="#0A0C10" border="1px solid" borderColor="#1e2028" borderRadius="8px" px="3" py="1" w={{ base: 'full', sm: 'auto' }}>
                                     <Icon as={FiSearch} color="#8A8A93" />
                                     <Input
                                         placeholder="Search foods..."
@@ -267,14 +268,14 @@ const Nutrition: React.FC = () => {
                             ) : (
                                 <Grid templateColumns={{ base: "1fr", md: "1fr 1fr" }} gap="4">
                                     {filteredFoods.map((food: any) => (
-                                        <Flex key={food.id} bg="#0A0C10" p="3" borderRadius="12px" border="1px solid" borderColor="#1e2028" align="center" justify="space-between">
-                                            <Box>
+                                        <Flex key={food.id} bg="#0A0C10" p="3" borderRadius="12px" border="1px solid" borderColor="#1e2028" align={{ base: 'stretch', sm: 'center' }} justify="space-between" direction={{ base: 'column', sm: 'row' }} gap="3">
+                                            <Box minW="0">
                                                 <Text color="white" fontWeight="600" fontSize="14px">{food.name}</Text>
                                                 <Text color="#8A8A93" fontSize="12px">
                                                     {food.servingSize} {food.unit} • {food.calories} kcal
                                                 </Text>
                                             </Box>
-                                            <HStack spacing="2">
+                                            <HStack spacing="2" justify={{ base: 'space-between', sm: 'flex-end' }} flexShrink={0}>
                                                 <Badge bg="rgba(224, 48, 48, 0.1)" color="#E03030" px="2" py="0.5" borderRadius="md" fontSize="10px">
                                                     {food.protein}g P
                                                 </Badge>
