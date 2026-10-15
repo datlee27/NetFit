@@ -90,15 +90,32 @@ const Register: React.FC = () => {
   const onSubmit = async (data: RegisterFormInputs) => {
     setIsLoading(true)
     try {
-      await authApi.sendRegisterOTP({ email: data.email })
-      setRegisterData(data)
+      const res = await authApi.sendRegisterOTP({ email: data.email.trim() })
+      setRegisterData({ ...data, email: data.email.trim() })
       setIsOtpModalOpen(true)
+      if (res?.otpCode) {
+        toast({
+          title: 'Mã xác thực (Dev mode)',
+          description: `Mã OTP của bạn là: ${res.otpCode}`,
+          status: 'info',
+          duration: 10000,
+          isClosable: true,
+        })
+      } else {
+        toast({
+          title: 'Đã gửi mã OTP',
+          description: res?.message || 'Vui lòng kiểm tra hộp thư đến (hoặc thư rác) của bạn.',
+          status: 'success',
+          duration: 4000,
+          isClosable: true,
+        })
+      }
     } catch (error: any) {
       toast({
-        title: 'Failed to send OTP',
-        description: error.response?.data?.message || 'Please try again later.',
+        title: 'Không thể gửi mã OTP',
+        description: error.response?.data?.message || error.message || 'Vui lòng thử lại sau.',
         status: 'error',
-        duration: 3000,
+        duration: 4000,
         isClosable: true,
       })
     } finally {
@@ -108,12 +125,12 @@ const Register: React.FC = () => {
 
   const handleVerifyOtp = async (otp: string) => {
     if (!registerData) return
-    await authApi.verifyRegisterOTP({ email: registerData.email, otpCode: otp })
+    await authApi.verifyRegisterOTP({ email: registerData.email.trim(), otpCode: otp.trim() })
     
     // Once verified, perform actual registration
     const response = await authService.register({
       fullname: registerData.fullName,
-      email: registerData.email,
+      email: registerData.email.trim(),
       password: registerData.password,
       confirmPassword: registerData.confirmPassword
     })
@@ -122,8 +139,8 @@ const Register: React.FC = () => {
     setIsOtpModalOpen(false)
     
     toast({
-      title: 'Registration Successful',
-      description: `Welcome to AISTHEA, ${response.fullname}! Let's start training.`,
+      title: 'Đăng ký thành công',
+      description: `Chào mừng ${response.fullname} đến với NETFIT!`,
       status: 'success',
       duration: 4000,
       isClosable: true,
@@ -135,7 +152,24 @@ const Register: React.FC = () => {
 
   const handleResendOtp = async () => {
     if (!registerData) return
-    await authApi.sendRegisterOTP({ email: registerData.email })
+    const res = await authApi.sendRegisterOTP({ email: registerData.email.trim() })
+    if (res?.otpCode) {
+      toast({
+        title: 'Mã xác thực mới (Dev mode)',
+        description: `Mã OTP mới: ${res.otpCode}`,
+        status: 'info',
+        duration: 10000,
+        isClosable: true,
+      })
+    } else {
+      toast({
+        title: 'Đã gửi lại mã OTP',
+        description: 'Vui lòng kiểm tra hộp thư của bạn.',
+        status: 'success',
+        duration: 4000,
+        isClosable: true,
+      })
+    }
   }
 
   return (
@@ -160,7 +194,7 @@ const Register: React.FC = () => {
             cursor="pointer"
             onClick={() => navigate('/')}
           >
-            AISTHEA
+            NETFIT
           </Heading>
           <Text fontSize="14px" color="#e5bdb9">
             Elite Performance AI
