@@ -183,24 +183,37 @@ public class AuthController : ControllerBase
     [HttpPost("reset-password")]
     public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto request)
     {
-        // Check if there's a recently USED OTP for this email and purpose within the 15 minutes
+        if (string.IsNullOrWhiteSpace(request?.Email) || string.IsNullOrWhiteSpace(request?.NewPassword))
+        {
+            return BadRequest(new { message = "Email và mật khẩu mới không được để trống." });
+        }
+
+        var normalizedEmail = request.Email.Trim().ToLowerInvariant();
+
+        // Check if there's a recently USED OTP for this email and purpose within 15 minutes
         EmailOTP? latestOTP = await _context.EmailOTPs
            .OrderByDescending(e => e.CreatedAt)
-           .FirstOrDefaultAsync(e => e.Email == request.Email && e.Purpose == "ForgotPassword");
+           .FirstOrDefaultAsync(e => e.Email == normalizedEmail && e.Purpose == "ForgotPassword");
 
         if (latestOTP == null || !latestOTP.IsUsed || (DateTime.UtcNow - latestOTP.UpdatedAt).TotalMinutes > 15)
         {
-            return BadRequest(new { message = "OTP not verified or verification expired." });
+            return BadRequest(new { message = "Mã OTP chưa được xác thực hoặc phiên xác thực đã hết hạn (quá 15 phút)." });
         }
 
-        var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
-        if (user == null) return BadRequest(new { message = "User not found." });
+        var user = await _context.Users.FirstOrDefaultAsync(u => u.Email.ToLower() == normalizedEmail);
+        if (user == null) return BadRequest(new { message = "Không tìm thấy tài khoản người dùng." });
 
-        // Update password using BCrypt (assuming it's what AuthService uses)
-        user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.NewPassword);
+        // Update password using BCrypt
+        user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.NewPassword.Trim());
+        user.PasswordChangedAt = DateTime.UtcNow;
+        user.UpdatedAt = DateTime.UtcNow;
         _context.Users.Update(user);
+
+        // Invalidate the OTP so it cannot be reused
+        _context.EmailOTPs.Remove(latestOTP);
+
         await _context.SaveChangesAsync();
 
-        return Ok(new { message = "Password reset successfully." });
+        return Ok(new { message = "Đặt lại mật khẩu thành công. Vui lòng đăng nhập bằng mật khẩu mới." });
     }
 }
