@@ -30,7 +30,7 @@ const BodyMetricsModal: React.FC<BodyMetricsModalProps> = ({ isOpen, onClose, on
     const [height, setHeight] = useState('')
     const [weight, setWeight] = useState('')
     const [loading, setLoading] = useState(false)
-    const toast = useToast()
+    const toast = useToast({ position: 'top' })
 
     const handleSave = async () => {
         if (!gender || !age || !height || !weight) {
@@ -74,7 +74,7 @@ const BodyMetricsModal: React.FC<BodyMetricsModalProps> = ({ isOpen, onClose, on
     return (
         <Modal isOpen={isOpen} onClose={() => {}} isCentered closeOnOverlayClick={false} size="xl">
             <ModalOverlay bg="rgba(10,12,16,0.8)" backdropFilter="blur(10px)" />
-            <ModalContent bg="#111318" border="1px solid #1e2028" borderRadius="24px" p="2">
+            <ModalContent mx="3" bg="#111318" border="1px solid #1e2028" borderRadius={{ base: '16px', sm: '24px' }} p={{ base: 0, sm: '2' }}>
                 <ModalHeader color="white" textAlign="center" pt="6" pb="2">
                     <Text fontSize="20px" fontWeight="800">Basic Information</Text>
                     <Text fontSize="13px" fontWeight="400" color="#8A8A93" mt="1">
@@ -113,7 +113,7 @@ const BodyMetricsModal: React.FC<BodyMetricsModalProps> = ({ isOpen, onClose, on
                             </HStack>
                         </Box>
 
-                        <Grid templateColumns="repeat(3, 1fr)" gap="3">
+                        <Grid templateColumns={{ base: '1fr', sm: 'repeat(3, minmax(0, 1fr))' }} gap="3">
                             <Box>
                                 <Text fontSize="12px" fontWeight="700" color="#8A8A93" mb="2" textTransform="uppercase" letterSpacing="wider">Age</Text>
                                 <InputGroup size="md">

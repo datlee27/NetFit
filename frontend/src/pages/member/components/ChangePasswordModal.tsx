@@ -58,7 +58,7 @@ const ChangePasswordModal: React.FC<Props> = ({ isOpen, onClose, onSuccess }) =>
     return (
         <Modal isOpen={isOpen} onClose={onClose} isCentered>
             <ModalOverlay bg="blackAlpha.700" backdropFilter="blur(5px)" />
-            <ModalContent bg="#111318" border="1px solid #1e2028" borderRadius="20px">
+            <ModalContent mx="3" bg="#111318" border="1px solid #1e2028" borderRadius={{ base: '16px', sm: '20px' }}>
                 <ModalHeader color="white">Change Password</ModalHeader>
                 <ModalCloseButton color="white" />
                 <ModalBody>
@@ -122,8 +122,8 @@ const ChangePasswordModal: React.FC<Props> = ({ isOpen, onClose, onSuccess }) =>
                         </FormControl>
                     </VStack>
                 </ModalBody>
-                <ModalFooter>
-                    <Button variant="ghost" mr={3} onClick={onClose} color="#8A8A93" _hover={{ bg: '#1e2028' }}>
+                <ModalFooter flexDirection={{ base: 'column-reverse', sm: 'row' }} gap="2">
+                    <Button variant="ghost" mr={{ base: 0, sm: 3 }} w={{ base: 'full', sm: 'auto' }} onClick={onClose} color="#8A8A93" _hover={{ bg: '#1e2028' }}>
                         Cancel
                     </Button>
                     <Button 
@@ -132,6 +132,7 @@ const ChangePasswordModal: React.FC<Props> = ({ isOpen, onClose, onSuccess }) =>
                         _hover={{ bg: '#c22727' }} 
                         onClick={handleSubmit}
                         isLoading={loading}
+                        w={{ base: 'full', sm: 'auto' }}
                     >
                         Save Password
                     </Button>

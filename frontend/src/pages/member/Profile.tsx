@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import useSWR from 'swr'
 import {
     Box,
@@ -56,13 +56,6 @@ const Profile: React.FC = () => {
         navigate('/login')
     }
 
-    // Automatically open metric modal if no metric exists
-    useEffect(() => {
-        if (!isMetricLoading && metric === null) {
-            setIsMetricModalOpen(true)
-        }
-    }, [isMetricLoading, metric])
-
     const handleSaveMetrics = async (data: { age: number; gender: string; height: number; weight: number }) => {
         const newMetric = await addBodyMetric(data)
         mutateMetric(newMetric)
@@ -75,7 +68,7 @@ const Profile: React.FC = () => {
 
     return (
         <MemberLayout>
-            <Box w="full" minH="100vh" bg="#0A0C10" p="6" pb="24">
+            <Box w="full" minW="0" minH="100vh" bg="#0A0C10" p={{ base: '4', md: '6' }} pb="24">
                 {/* Header */}
                 <Flex justify="space-between" align="center" mb="8">
                     <Heading fontSize="24px" fontWeight="800" color="white">
@@ -84,13 +77,13 @@ const Profile: React.FC = () => {
 
                 </Flex>
 
-                <Grid templateColumns="1fr 340px" gap="6">
+                <Grid templateColumns={{ base: '1fr', lg: 'minmax(0, 1fr) 340px' }} gap="6">
                     {/* Left Column */}
                     <Stack spacing="6">
                         {/* Profile Header Card */}
-                        <Box bg="#111318" border="1px solid #1e2028" borderRadius="20px" p="6">
-                            <Flex justify="space-between" align="flex-start">
-                                <Box>
+                        <Box bg="#111318" border="1px solid #1e2028" borderRadius={{ base: '16px', sm: '20px' }} p={{ base: '4', sm: '6' }}>
+                            <Flex justify="space-between" align={{ base: 'stretch', sm: 'flex-start' }} direction={{ base: 'column', sm: 'row' }} gap="4">
+                                <Box minW="0">
                                     <Heading fontSize="20px" fontWeight="800" color="white" mb="2">
                                         {profile?.name ? `${profile.name} Profile` : "Member Profile"}
                                     </Heading>
@@ -98,7 +91,7 @@ const Profile: React.FC = () => {
                                         Manage your biometric data and account preferences
                                     </Text>
                                 </Box>
-                                <HStack spacing="3">
+                                <HStack spacing="3" w={{ base: 'full', sm: 'auto' }}>
                                     <Button
                                         leftIcon={<FiEdit2 />}
                                         variant="outline"
@@ -109,6 +102,7 @@ const Profile: React.FC = () => {
                                         size="sm"
                                         borderRadius="8px"
                                         onClick={() => setIsMetricModalOpen(true)}
+                                        flex="1"
                                     >
                                         Edit Profile
                                     </Button>
@@ -119,6 +113,7 @@ const Profile: React.FC = () => {
                                         _hover={{ bg: '#c22727' }}
                                         size="sm"
                                         borderRadius="8px"
+                                        flex="1"
                                     >
                                         Save Changes
                                     </Button>
@@ -127,7 +122,7 @@ const Profile: React.FC = () => {
                         </Box>
 
                         {/* Biometric Overview */}
-                        <Box bg="#111318" border="1px solid #1e2028" borderRadius="20px" p="6">
+                        <Box bg="#111318" border="1px solid #1e2028" borderRadius={{ base: '16px', sm: '20px' }} p={{ base: '4', sm: '6' }}>
                             <Flex justify="space-between" align="center" mb="5">
                                 <Heading fontSize="16px" fontWeight="700" color="white">
                                     Biometric Overview
@@ -137,7 +132,7 @@ const Profile: React.FC = () => {
                             {loading ? (
                                 <Flex justify="center" p="10"><Spinner color="#E03030" /></Flex>
                             ) : (
-                                <Grid templateColumns="repeat(3, 1fr)" gap="4">
+                                <Grid templateColumns={{ base: '1fr', sm: 'repeat(3, minmax(0, 1fr))' }} gap="4">
                                     {/* Height */}
                                     <Box bg="#0A0C10" p="4" borderRadius="16px" border="1px solid #1e2028">
                                         <Text fontSize="12px" fontWeight="700" color="#8A8A93" textTransform="uppercase" mb="2">
@@ -190,21 +185,21 @@ const Profile: React.FC = () => {
                         </Box>
 
                         {/* Account Information */}
-                        <Box bg="#111318" border="1px solid #1e2028" borderRadius="20px" p="6">
+                        <Box bg="#111318" border="1px solid #1e2028" borderRadius={{ base: '16px', sm: '20px' }} p={{ base: '4', sm: '6' }}>
                             <Heading fontSize="16px" fontWeight="700" color="white" mb="5">
                                 Account Information
                             </Heading>
                             {loading ? (
                                 <Flex justify="center"><Spinner color="#E03030" /></Flex>
                             ) : (
-                                <Grid templateColumns="repeat(2, 1fr)" gap="6">
+                                <Grid templateColumns={{ base: '1fr', sm: 'repeat(2, minmax(0, 1fr))' }} gap="6">
                                     <Box>
                                         <Text fontSize="13px" color="#8A8A93" mb="1">User Name</Text>
                                         <Text fontSize="15px" fontWeight="600" color="white">{profile?.name || '--'}</Text>
                                     </Box>
-                                    <Box>
+                                    <Box minW="0">
                                         <Text fontSize="13px" color="#8A8A93" mb="1">Email Address</Text>
-                                        <Text fontSize="15px" fontWeight="600" color="white">{profile?.email || '--'}</Text>
+                                        <Text fontSize="15px" fontWeight="600" color="white" overflowWrap="anywhere">{profile?.email || '--'}</Text>
                                     </Box>
                                     <Box>
                                         <Text fontSize="13px" color="#8A8A93" mb="1">Membership Tier</Text>
@@ -219,13 +214,13 @@ const Profile: React.FC = () => {
                         </Box>
 
                         {/* Security & Access */}
-                        <Box bg="#111318" border="1px solid #1e2028" borderRadius="20px" p="6">
+                        <Box bg="#111318" border="1px solid #1e2028" borderRadius={{ base: '16px', sm: '20px' }} p={{ base: '4', sm: '6' }}>
                             <Heading fontSize="16px" fontWeight="700" color="white" mb="5">
                                 Security & Access
                             </Heading>
                             <Stack spacing="4">
-                                <Flex justify="space-between" align="center" p="4" bg="#0A0C10" borderRadius="12px" border="1px solid #1e2028">
-                                    <Box>
+                                <Flex justify="space-between" align="center" gap="3" p="4" bg="#0A0C10" borderRadius="12px" border="1px solid #1e2028">
+                                    <Box minW="0">
                                         <Text fontSize="14px" fontWeight="600" color="white">Password</Text>
                                         <Text fontSize="12px" color="#8A8A93">{loading ? 'Loading...' : formatTimeAgo(profile?.passwordChangedAt || null)}</Text>
                                     </Box>
@@ -244,7 +239,7 @@ const Profile: React.FC = () => {
 
                     {/* Right Column - ID Card */}
                     <Box>
-                        <Box bg="#111318" border="1px solid #1e2028" borderRadius="24px" p="6" textAlign="center" position="relative" overflow="hidden">
+                        <Box bg="#111318" border="1px solid #1e2028" borderRadius={{ base: '16px', sm: '24px' }} p={{ base: '4', sm: '6' }} textAlign="center" position="relative" overflow="hidden">
                             <Box
                                 position="absolute"
                                 top="0"
