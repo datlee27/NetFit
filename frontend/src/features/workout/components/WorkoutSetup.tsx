@@ -69,7 +69,12 @@ const WorkoutSetup: React.FC<WorkoutSetupProps> = ({ onComplete }) => {
         const fetchMusclesAndAccess = async () => {
             try {
                 const apiMuscles = await getMuscleGroups()
-                const mappedZones = apiMuscles.map(apiM => {
+                // "Full Body" is an action that selects all individual groups below,
+                // not a separate target muscle. Keeping it out avoids rendering two
+                // Full Body choices and ensures the request contains every group.
+                const mappedZones = apiMuscles
+                    .filter(apiM => apiM.name.toLowerCase() !== 'full body')
+                    .map(apiM => {
                     const shape = muscleShapes.find(s => s.label.toLowerCase() === apiM.name.toLowerCase() || s.id === apiM.name.toLowerCase())
                     return {
                         id: apiM.name.toLowerCase(),
