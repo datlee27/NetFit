@@ -132,7 +132,8 @@ public class OTPService : IOTPService
             var isDev = string.IsNullOrEmpty(_configuration["SMTP_USER"]) || string.IsNullOrEmpty(_configuration["SMTP_PASS"]);
             if (!isDev)
             {
-                throw new InvalidOperationException("Không thể gửi email OTP qua dịch vụ gửi thư. Vui lòng kiểm tra lại địa chỉ email hoặc thử lại sau.");
+                // Throw with the actual error message so controller can return it to client
+                throw new InvalidOperationException($"Không thể gửi email OTP: {ex.Message}");
             }
         }
 
