@@ -1,6 +1,7 @@
 import React from 'react'
 import { Navigate } from 'react-router-dom'
 import { useAuthStore } from '../store/useAuthStore'
+import BasicInfoPrompt from '../components/auth/BasicInfoPrompt'
 
 interface PrivateRouteProps {
     children: React.ReactNode
@@ -27,7 +28,10 @@ const PrivateRoute: React.FC<PrivateRouteProps> = ({ children, requiredRoles }) 
         }
     }
 
-    return <>{children}</>
+    return <>
+        {roleId === 3 && <BasicInfoPrompt />}
+        {children}
+    </>
 }
 
 export default PrivateRoute

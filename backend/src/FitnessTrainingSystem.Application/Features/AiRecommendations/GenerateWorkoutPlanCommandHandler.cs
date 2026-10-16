@@ -93,7 +93,33 @@ public class GenerateWorkoutPlanCommandHandler : IRequestHandler<GenerateWorkout
         }
 
         int exercisesToTake = warmupEx != null ? 4 : 5;
-        finalExercises.AddRange(availableExercises.Take(exercisesToTake));
+        var requestedMuscleGroups = request.MuscleGroup
+            .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        var isFullBody = requestedMuscleGroups.Length == 1
+            && requestedMuscleGroups[0].Equals("Full Body", StringComparison.OrdinalIgnoreCase);
+        var exercisesForTargets = isFullBody
+            ? availableExercises.Where(e => !string.Equals(e.MuscleGroupName, "Full Body", StringComparison.OrdinalIgnoreCase)).ToList()
+            : availableExercises;
+
+        // Put one exercise from every selected group into the plan before filling
+        // the remaining slots. Database insertion order previously made a Full Body
+        // plan consist almost entirely of Chest exercises.
+        var exercisesByTarget = (isFullBody || requestedMuscleGroups.Length > 1)
+            ? exercisesForTargets
+                .GroupBy(e => e.MuscleGroupName, StringComparer.OrdinalIgnoreCase)
+                .Select(group => group.First())
+                .ToList()
+            : exercisesForTargets.Take(exercisesToTake).ToList();
+
+        if (exercisesByTarget.Count < exercisesToTake)
+        {
+            var selectedIds = exercisesByTarget.Select(e => e.Id).ToHashSet();
+            exercisesByTarget.AddRange(exercisesForTargets
+                .Where(e => !selectedIds.Contains(e.Id))
+                .Take(exercisesToTake - exercisesByTarget.Count));
+        }
+
+        finalExercises.AddRange(exercisesByTarget);
 
         foreach (var ex in finalExercises)
         {
