@@ -18,10 +18,10 @@ import PaymentSuccess from "../pages/public/PaymentSuccess";
 import Dashboard from "../pages/member/Dashboard";
 import Workouts from "../pages/member/Workouts";
 import ExerciseLibrary from "../pages/member/exercises/ExerciseLibrary";
-import Nutrition from "../pages/member/Nutrition";
+// import Nutrition from "../pages/member/Nutrition";
 import Progress from "../pages/member/Progress";
 import PTBooking from "../pages/member/PTBooking";
-import AIChat from "../pages/member/AIChat";
+// import AIChat from "../pages/member/AIChat";
 import Profile from "../pages/member/Profile";
 
 // Admin & PT Area
@@ -35,6 +35,7 @@ import AdminPTs from "../pages/admin/AdminPTs";
 import AdminPlatform from "../pages/admin/AdminPlatform";
 import AdminPayments from "../pages/admin/AdminPayments";
 import AdminPackages from "../pages/admin/AdminPackages";
+import AdminReviews from "../pages/admin/AdminReviews";
 import AdminExerciseRequests from "../pages/admin/AdminExerciseRequests";
 import PtExerciseRequests from "../pages/pt/PtExerciseRequests";
 import PTDashboard from "../pages/pt/PTDashboard";
@@ -85,6 +86,7 @@ const RouterContainer = () => {
             <Route path="/admin/platform" element={<AdminRoute><AdminPlatform /></AdminRoute>} />
             <Route path="/admin/payments" element={<AdminRoute><AdminPayments /></AdminRoute>} />
             <Route path="/admin/packages" element={<AdminRoute><AdminPackages /></AdminRoute>} />
+            <Route path="/admin/reviews" element={<AdminRoute><AdminReviews /></AdminRoute>} />
 
             {/* PT Portal Routes */}
             <Route path="/pt/dashboard" element={<PTRoute><PTDashboard /></PTRoute>} />
@@ -99,10 +101,14 @@ const RouterContainer = () => {
             <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
             <Route path="/workouts" element={<PrivateRoute><Workouts /></PrivateRoute>} />
             <Route path="/exercises" element={<PrivateRoute><ExerciseLibrary /></PrivateRoute>} />
-            <Route path="/nutrition" element={<PrivateRoute><Nutrition /></PrivateRoute>} />
+            {/* Temporarily hidden for production:
+            <Route path="/nutrition" element={<PrivateRoute><Nutrition /></PrivateRoute>} /> */}
+            <Route path="/nutrition" element={<Navigate to="/dashboard" replace />} />
             <Route path="/progress" element={<PrivateRoute><Progress /></PrivateRoute>} />
             <Route path="/pt-booking" element={<PrivateRoute><PTBooking /></PrivateRoute>} />
-            <Route path="/ai-chat" element={<PrivateRoute><AIChat /></PrivateRoute>} />
+            {/* Temporarily hidden for production:
+            <Route path="/ai-chat" element={<PrivateRoute><AIChat /></PrivateRoute>} /> */}
+            <Route path="/ai-chat" element={<Navigate to="/dashboard" replace />} />
             <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
 
             {/* Default Route Redirect to Landing */}

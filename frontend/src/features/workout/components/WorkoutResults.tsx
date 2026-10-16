@@ -5,6 +5,7 @@ import {
     Box,
     Checkbox,
     Flex,
+    Grid,
     HStack,
     Heading,
     Stack,
@@ -14,9 +15,11 @@ import {
 import AppButton from '../../../components/shared/Button/AppButton'
 import MemberLayout from '../../../components/shared/Layout/MemberLayout.tsx'
 import WorkoutExerciseModal from './WorkoutExerciseModal'
+import WebsiteReviewModal from './WebsiteReviewModal'
 import type { ExerciseCardData } from '../types/workout'
 import { useWorkoutStore } from '../../../store/useWorkoutStore.ts'
 import { startWorkoutSession, completeWorkoutSession } from '../../../api/workouts.ts'
+import apiClient from '../../../lib/axios.ts'
 
 const MiniStat: React.FC<{ value: string; label: string }> = ({
     value,
@@ -69,6 +72,7 @@ const ExerciseCard: React.FC<ExerciseCardProps> = ({
     return (
         <Flex
             align="center"
+            flexWrap="wrap"
             gap="4"
             bg={isActive ? '#141720' : '#0f1117'}
             border="1px solid"
@@ -102,7 +106,7 @@ const ExerciseCard: React.FC<ExerciseCardProps> = ({
                 )}
             </Box>
 
-            <Box flex="1">
+            <Box flex="1" minW="0">
                 <Text fontSize="15px" fontWeight="700" color={isLocked ? '#8A8A93' : 'white'} mb="1">{name}</Text>
                 <HStack spacing="2" flexWrap="wrap">
                     {safeTags.map((t, ti) => (
@@ -118,11 +122,11 @@ const ExerciseCard: React.FC<ExerciseCardProps> = ({
                 )}
             </Box>
 
-            <Box textAlign="right" flexShrink={0}>
+            <Box textAlign={{ base: 'left', sm: 'right' }} flexShrink={0} w={{ base: 'full', sm: 'auto' }}>
                 <Text fontSize="16px" fontWeight="800" color={isActive ? '#E03030' : (isLocked || isSkipped) ? '#8A8A93' : '#E2E1EB'}>{sets}</Text>
                 <Text fontSize="9px" fontWeight="600" color="#8A8A93" textTransform="uppercase" letterSpacing="wider">{setsLabel}</Text>
                 {(isActive || isSkipped) && (
-                    <Flex align="center" gap="4" justify="flex-end" mt="3">
+                    <Flex align="center" gap="4" justify={{ base: 'flex-start', sm: 'flex-end' }} mt="3">
                         {!isSkipped && (
                             <Text fontSize="13px" fontWeight="600" color="#8A8A93" cursor="pointer" _hover={{color: 'white'}} onClick={onSkip}>
                                 Skip
@@ -161,7 +165,18 @@ const WorkoutResults: React.FC = () => {
         setPhase
     } = useWorkoutStore()
     const [selectedExercise, setSelectedExercise] = useState<(ExerciseCardData & { arrayIndex: number }) | null>(null)
+    const [isReviewModalOpen, setIsReviewModalOpen] = useState<boolean>(false)
     const navigate = useNavigate()
+
+    const finishWorkoutAndNavigate = () => {
+        if (data?.planType === 'weekly' && weeklyPlans && currentDayIndex < weeklyPlans.length - 1) {
+            setCurrentDayIndex(currentDayIndex + 1)
+            window.scrollTo({ top: 0, behavior: 'smooth' })
+        } else {
+            resetWorkout()
+            navigate('/nutrition')
+        }
+    }
 
     const currentDay = data?.planType === 'weekly' ? (weeklyPlans ? weeklyPlans[currentDayIndex] : null) : null
     const dayExercises = (currentDay ? currentDay.exercises : exercises) || []
@@ -210,17 +225,18 @@ const WorkoutResults: React.FC = () => {
                     }))
                 })
             }
+
+            // Kiểm tra xem tài khoản có đủ điều kiện đánh giá trang web không (sau bài tập đầu tiên & mỗi tài khoản 1 lần)
+            const statusRes = await apiClient.get('/website-reviews/status').catch(() => null)
+            if (statusRes?.data?.canReview) {
+                setIsReviewModalOpen(true)
+                return
+            }
         } catch (error) {
             console.error("Failed to complete session:", error)
-        } finally {
-            if (data?.planType === 'weekly' && weeklyPlans && currentDayIndex < weeklyPlans.length - 1) {
-                setCurrentDayIndex(currentDayIndex + 1)
-                window.scrollTo({ top: 0, behavior: 'smooth' })
-            } else {
-                resetWorkout()
-                navigate('/nutrition')
-            }
         }
+
+        finishWorkoutAndNavigate()
     }
 
     const handleModalExerciseComplete = () => {
@@ -264,7 +280,7 @@ const WorkoutResults: React.FC = () => {
     return (
         <MemberLayout>
             <Box minH="100vh" display="flex" flexDirection="column">
-                <Box flex="1" p="7" pb="28" maxW="900px">
+                <Box flex="1" w="full" minW="0" p={{ base: '4', md: '7' }} pb="28" maxW="900px">
                     <Flex align="center" gap="3" mb="1" flexWrap="wrap">
                         <Heading fontSize="24px" fontWeight="800" color="white">
                             {data.planType === 'weekly' && currentDay 
@@ -326,12 +342,12 @@ const WorkoutResults: React.FC = () => {
                         </Flex>
                     )}
 
-                    <HStack spacing="3" mb="6">
+                    <Grid templateColumns={{ base: 'repeat(2, minmax(0, 1fr))', sm: 'repeat(4, minmax(0, 1fr))' }} gap="3" mb="6">
                         <MiniStat value={String(dayExercises.length)} label="Exercises" />
                         <MiniStat value={currentDay ? `${currentDay.targetCalories}` : `${data.targetCalories}`} label="Calories" />
                         <MiniStat value={currentDay ? `${currentDay.targetDurationMinutes}m` : `${data.duration}m`} label="Duration" />
                         <MiniStat value={diffMap[data.level] ?? 'Medium'} label="Difficulty" />
-                    </HStack>
+                    </Grid>
 
                     <Stack spacing="3">
                         {dayExercises.map((ex, i) => (
@@ -360,11 +376,12 @@ const WorkoutResults: React.FC = () => {
                 </Box>
 
                 <Box
-                    position="fixed" bottom="0" left="190px" right="0" h="64px"
+                    position="fixed" bottom="0" left={{ base: 0, lg: '190px' }} right="0" h={{ base: 'auto', sm: '64px' }}
                     bg="#111318" borderTop="1px solid" borderColor="#1e2028"
-                    px="7" display="flex" alignItems="center" justifyContent="space-between" zIndex={50}
+                    px={{ base: '4', md: '7' }} py={{ base: '3', sm: 0 }} display="flex"
+                    flexDirection={{ base: 'column', sm: 'row' }} alignItems="stretch" justifyContent="space-between" gap={{ base: '3', sm: 0 }} zIndex={50}
                 >
-                    <Box flex="1" mr="8">
+                    <Box flex="1" mr={{ base: 0, sm: '8' }}>
                         <Flex justify="space-between" mb="1">
                             <Text fontSize="10px" fontWeight="700" color="#8A8A93" textTransform="uppercase" letterSpacing="wider">Progress</Text>
                             <Text fontSize="11px" fontWeight="600" color="white">{completedCount} / {dayExercises.length} Completed</Text>
@@ -378,13 +395,14 @@ const WorkoutResults: React.FC = () => {
                         </Box>
                     </Box>
                     <Box 
+                        w={{ base: 'full', sm: 'auto' }}
                         onClick={completedCount === dayExercises.length ? handleCompleteWorkout : undefined}
                         opacity={completedCount === dayExercises.length ? 1 : 0.5}
                         cursor={completedCount === dayExercises.length ? 'pointer' : 'not-allowed'}
                     >
                         <AppButton
                             label={completedCount === dayExercises.length ? (data.planType === 'weekly' ? `Complete ${currentDay?.title}` : "Complete Workout") : "Finish All First"}
-                            variant="solid" h="40px" px="6" fontSize="13px"
+                            variant="solid" h="40px" px="6" fontSize="13px" w={{ base: 'full', sm: 'auto' }}
                             isDisabled={completedCount !== dayExercises.length}
                         />
                     </Box>
@@ -409,6 +427,18 @@ const WorkoutResults: React.FC = () => {
                         ? selectedExercise.restSeconds
                         : 60,
                 } : null}
+            />
+
+            <WebsiteReviewModal
+                isOpen={isReviewModalOpen}
+                onClose={() => {
+                    setIsReviewModalOpen(false)
+                    finishWorkoutAndNavigate()
+                }}
+                onSuccess={() => {
+                    setIsReviewModalOpen(false)
+                    finishWorkoutAndNavigate()
+                }}
             />
         </MemberLayout>
     )

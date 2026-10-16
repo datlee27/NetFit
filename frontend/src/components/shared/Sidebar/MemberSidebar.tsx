@@ -12,10 +12,10 @@ import {
     FiGrid,
     FiActivity,
     FiBookOpen,
-    FiShoppingCart,
+    // FiShoppingCart,
     FiBarChart2,
     FiCalendar,
-    FiMessageSquare,
+    // FiMessageSquare,
     FiUser,
 } from 'react-icons/fi'
 
@@ -23,29 +23,35 @@ const navItems = [
     { label: 'Dashboard', icon: FiGrid, path: '/dashboard' },
     { label: 'Workouts', icon: FiActivity, path: '/workouts' },
     { label: 'Exercises', icon: FiBookOpen, path: '/exercises' },
-    { label: 'Nutrition', icon: FiShoppingCart, path: '/nutrition' },
+    // Temporarily hidden for production:
+    // { label: 'Nutrition', icon: FiShoppingCart, path: '/nutrition' },
     { label: 'Progress', icon: FiBarChart2, path: '/progress' },
     { label: 'PT Booking', icon: FiCalendar, path: '/pt-booking' },
-    { label: 'AI Chat', icon: FiMessageSquare, path: '/ai-chat' },
+    // { label: 'AI Chat', icon: FiMessageSquare, path: '/ai-chat' },
 ]
 
-const MemberSidebar: React.FC = () => {
+interface MemberSidebarProps {
+    mobile?: boolean
+    onNavigate?: () => void
+}
+
+const MemberSidebar: React.FC<MemberSidebarProps> = ({ mobile = false, onNavigate }) => {
     const navigate = useNavigate()
     const location = useLocation()
 
     return (
         <Box
-            w="190px"
-            minW="190px"
+            w={mobile ? '100%' : '190px'}
+            minW={mobile ? '100%' : '190px'}
             h="100vh"
-            position="fixed"
+            position={mobile ? 'static' : 'fixed'}
             top="0"
             left="0"
             className="no-print"
             bg="#111318"
             borderRight="1px solid"
             borderColor="#1e1f26"
-            display="flex"
+            display={mobile ? 'flex' : { base: 'none', lg: 'flex' }}
             flexDirection="column"
             zIndex={100}
         >
@@ -57,7 +63,10 @@ const MemberSidebar: React.FC = () => {
                     color="white"
                     letterSpacing="-0.02em"
                     cursor="pointer"
-                    onClick={() => navigate('/')}
+                    onClick={() => {
+                        navigate('/')
+                        onNavigate?.()
+                    }}
                 >
                     NETFIT
                 </Heading>
@@ -88,7 +97,10 @@ const MemberSidebar: React.FC = () => {
                                 bg: isActive ? '#E03030' : 'rgba(255,255,255,0.05)',
                                 color: isActive ? 'white' : '#E2E1EB',
                             }}
-                            onClick={() => navigate(item.path)}
+                            onClick={() => {
+                                navigate(item.path)
+                                onNavigate?.()
+                            }}
                         >
                             <Icon as={item.icon} boxSize="16px" />
                             <Text>{item.label}</Text>
@@ -110,7 +122,10 @@ const MemberSidebar: React.FC = () => {
                     fontSize="14px"
                     fontWeight="500"
                     _hover={{ bg: 'rgba(255,255,255,0.05)', color: '#E2E1EB' }}
-                    onClick={() => navigate('/profile')}
+                    onClick={() => {
+                        navigate('/profile')
+                        onNavigate?.()
+                    }}
                 >
                     <Icon as={FiUser} boxSize="16px" />
                     <Text>Profile</Text>
