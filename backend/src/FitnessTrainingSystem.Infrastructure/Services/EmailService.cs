@@ -36,19 +36,23 @@ public class EmailService : IEmailService
         {
             var host = _configuration["SMTP_HOST"] ?? "smtp.gmail.com";
             var port = int.TryParse(_configuration["SMTP_PORT"], out int p) ? p : 587;
-            var from = _configuration["SMTP_FROM"] ?? "AISTHEA <ecodanarentcar@gmail.com>";
+            var from = _configuration["SMTP_FROM"] ?? "NETFIT <hoanglan1912a@gmail.com>";
             var enableSsl = bool.TryParse(_configuration["SMTP_ENABLE_SSL"], out bool ssl) ? ssl : true;
 
             var email = new MimeMessage();
             
             // Parse "Name <email@address.com>"
-            var fromAddress = from;
-            var fromName = "";
+            var fromAddress = user ?? "hoanglan1912a@gmail.com";
+            var fromName = "NETFIT";
             if (from.Contains("<") && from.Contains(">"))
             {
                 var parts = from.Split('<');
                 fromName = parts[0].Trim();
-                fromAddress = parts[1].TrimEnd('>');
+                var parsedAddr = parts[1].TrimEnd('>', ' ', '"');
+                if (!string.IsNullOrWhiteSpace(parsedAddr))
+                {
+                    fromAddress = parsedAddr;
+                }
             }
             
             email.From.Add(new MailboxAddress(fromName, fromAddress));
@@ -63,17 +67,17 @@ public class EmailService : IEmailService
             email.Body = builder.ToMessageBody();
 
             using var smtp = new SmtpClient();
-            smtp.Timeout = 10000; // 10s
+            smtp.Timeout = 15000; // 15s
             smtp.ServerCertificateValidationCallback = (s, c, ch, e) => true;
             
-            if (enableSsl)
+            var socketOptions = port switch
             {
-                await smtp.ConnectAsync(host, port, SecureSocketOptions.StartTls);
-            }
-            else
-            {
-                await smtp.ConnectAsync(host, port, SecureSocketOptions.None);
-            }
+                465 => SecureSocketOptions.SslOnConnect,
+                587 => SecureSocketOptions.StartTls,
+                _ => enableSsl ? SecureSocketOptions.Auto : SecureSocketOptions.None
+            };
+
+            await smtp.ConnectAsync(host, port, socketOptions);
 
             if (!string.IsNullOrEmpty(user) && !string.IsNullOrEmpty(pass))
             {
