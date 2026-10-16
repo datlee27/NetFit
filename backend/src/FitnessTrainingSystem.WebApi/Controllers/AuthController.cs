@@ -82,57 +82,102 @@ public class AuthController : ControllerBase
             return BadRequest(new { message = "Email không được để trống." });
         }
 
-        var normalizedEmail = request.Email.Trim().ToLower();
-        var userExists = await _context.Users.AnyAsync(u => u.Email.ToLower() == normalizedEmail);
-        if (userExists)
+        var normalizedEmail = request.Email.Trim().ToLowerInvariant();
+
+        var existingUser = await _context.Users.AnyAsync(u => u.Email.ToLower() == normalizedEmail);
+        if (existingUser)
         {
-            return BadRequest(new { message = "Email đã được sử dụng" });
+            return BadRequest(new { message = "Email này đã được sử dụng. Vui lòng đăng nhập hoặc sử dụng email khác." });
         }
 
-        var otpCode = await _otpService.SendRegisterOTPAsync(request.Email.Trim());
-        if (!string.IsNullOrEmpty(otpCode))
+        try
         {
-            var isDev = string.IsNullOrEmpty(_configuration["SMTP_USER"]) || string.IsNullOrEmpty(_configuration["SMTP_PASS"]);
-            if (isDev) return Ok(new { message = "OTP sent successfully. (Dev mode)", otpCode });
-            return Ok(new { message = "OTP sent successfully." });
+            var otpCode = await _otpService.SendRegisterOTPAsync(normalizedEmail);
+            if (!string.IsNullOrEmpty(otpCode))
+            {
+                var isDev = string.IsNullOrEmpty(_configuration["SMTP_USER"]) || string.IsNullOrEmpty(_configuration["SMTP_PASS"]);
+                if (isDev) return Ok(new { message = "Mã OTP đã được tạo (Dev mode).", otpCode });
+                return Ok(new { message = "Mã OTP đã được gửi thành công đến email của bạn." });
+            }
+            return BadRequest(new { message = "Không thể gửi mã OTP. Vui lòng thử lại sau." });
         }
-        return BadRequest(new { message = "Failed to send OTP or cooldown active." });
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { message = "Lỗi gửi mã OTP: " + ex.Message });
+        }
     }
 
     [HttpPost("verify-register-otp")]
     public async Task<IActionResult> VerifyRegisterOTP([FromBody] VerifyOTPDto request)
     {
-        var result = await _otpService.VerifyRegisterOTPAsync(request.Email, request.OTPCode);
-        if (result) return Ok(new { message = "OTP verified successfully." });
-        return BadRequest(new { message = "Invalid or expired OTP." });
+        if (string.IsNullOrWhiteSpace(request?.Email) || string.IsNullOrWhiteSpace(request?.OTPCode))
+        {
+            return BadRequest(new { message = "Email và mã OTP không được để trống." });
+        }
+
+        var normalizedEmail = request.Email.Trim().ToLowerInvariant();
+        var result = await _otpService.VerifyRegisterOTPAsync(normalizedEmail, request.OTPCode.Trim());
+        if (result) return Ok(new { message = "Xác thực OTP thành công." });
+        return BadRequest(new { message = "Mã OTP không đúng hoặc đã hết hạn." });
     }
 
     [HttpPost("send-forgot-password-otp")]
     public async Task<IActionResult> SendForgotPasswordOTP([FromBody] SendOTPDto request)
     {
-        var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
-        if (user == null) return BadRequest(new { message = "Email not found." });
-
-        var otpCode = await _otpService.SendForgotPasswordOTPAsync(request.Email);
-        if (!string.IsNullOrEmpty(otpCode))
+        if (string.IsNullOrWhiteSpace(request?.Email))
         {
-            // In development, return OTP code since SMTP might not be configured
-            var isDev = string.IsNullOrEmpty(_configuration["SMTP_USER"]) || string.IsNullOrEmpty(_configuration["SMTP_PASS"]);
-            if (isDev) return Ok(new { message = "OTP sent successfully. (Dev mode)", otpCode });
-            return Ok(new { message = "OTP sent successfully." });
+            return BadRequest(new { message = "Email không được để trống." });
         }
-        return BadRequest(new { message = "Failed to send OTP or cooldown active." });
+
+        var normalizedEmail = request.Email.Trim().ToLowerInvariant();
+        var user = await _context.Users.FirstOrDefaultAsync(u => u.Email.ToLower() == normalizedEmail);
+        if (user == null) return BadRequest(new { message = "Không tìm thấy tài khoản với email này." });
+
+        try
+        {
+            var otpCode = await _otpService.SendForgotPasswordOTPAsync(normalizedEmail);
+            if (!string.IsNullOrEmpty(otpCode))
+            {
+                var isDev = string.IsNullOrEmpty(_configuration["SMTP_USER"]) || string.IsNullOrEmpty(_configuration["SMTP_PASS"]);
+                if (isDev) return Ok(new { message = "Mã OTP đã được tạo (Dev mode).", otpCode });
+                return Ok(new { message = "Mã OTP đặt lại mật khẩu đã được gửi đến email." });
+            }
+            return BadRequest(new { message = "Không thể gửi mã OTP. Vui lòng thử lại sau." });
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { message = "Lỗi gửi mã OTP: " + ex.Message });
+        }
     }
 
     [HttpPost("verify-forgot-password-otp")]
     public async Task<IActionResult> VerifyForgotPasswordOTP([FromBody] VerifyOTPDto request)
     {
-        // Actually, we don't need to verify here if we verify in reset-password, but to support the 5 APIs requirement, we can do a dry run or just verify.
-        // Wait, if we verify here, IsUsed becomes true. Then ResetPassword can't verify again.
-        // To fix this without complex tokens, let's just use VerifyForgotPasswordOTPAsync as intended.
-        var result = await _otpService.VerifyForgotPasswordOTPAsync(request.Email, request.OTPCode);
-        if (result) return Ok(new { message = "OTP verified successfully. You can now reset your password." });
-        return BadRequest(new { message = "Invalid or expired OTP." });
+        if (string.IsNullOrWhiteSpace(request?.Email) || string.IsNullOrWhiteSpace(request?.OTPCode))
+        {
+            return BadRequest(new { message = "Email và mã OTP không được để trống." });
+        }
+
+        var normalizedEmail = request.Email.Trim().ToLowerInvariant();
+        var result = await _otpService.VerifyForgotPasswordOTPAsync(normalizedEmail, request.OTPCode.Trim());
+        if (result) return Ok(new { message = "Xác thực OTP thành công. Bạn có thể đặt lại mật khẩu." });
+        return BadRequest(new { message = "Mã OTP không đúng hoặc đã hết hạn." });
     }
 
     [HttpPost("reset-password")]
