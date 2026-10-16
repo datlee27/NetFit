@@ -134,7 +134,7 @@ const ReviewMarquee: React.FC = () => {
     // scrolls at the same comfortable pace regardless of how many cards exist.
     // Each card is ~320px wide + 20px gap = 340px. Speed = 40px/s.
     const CARD_PX = 340  // card minW (320) + gap (20)
-    const SPEED_PX_PER_S = 40
+    const SPEED_PX_PER_S = 60
     const animDuration = Math.round((displayReviews.length * CARD_PX) / SPEED_PX_PER_S)
 
     return (
