@@ -108,23 +108,34 @@ const ReviewMarquee: React.FC = () => {
         { revalidateOnFocus: true, revalidateOnReconnect: true }
     )
 
-    // Filter server reviews: only allowed (not hidden) and 4-5 stars
-    const approvedReviews = (serverReviews || []).filter(
-        r => !r.isHidden && r.rating >= 4
-    )
+    // Filter: not hidden, 4-5 stars, sorted newest first, max 15 cards
+    const approvedReviews = (serverReviews || [])
+        .filter(r => !r.isHidden && r.rating >= 4)
+        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+        .slice(0, 15)
 
-    // Blend server reviews with fallback reviews if count is low to ensure seamless infinite looping
+    // Blend with fallback if not enough server reviews (need ≥ 4 for smooth loop)
     let displayReviews: WebsiteReviewDto[] = []
     if (approvedReviews.length >= 4) {
         displayReviews = approvedReviews
     } else if (approvedReviews.length > 0) {
+        // Merge & re-sort, then cap at 15
         displayReviews = [...approvedReviews, ...FALLBACK_REVIEWS]
+            .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+            .slice(0, 15)
     } else {
         displayReviews = FALLBACK_REVIEWS
     }
 
     // Duplicate list to achieve continuous, seamless infinite loop without stutter
     const duplicatedReviews = [...displayReviews, ...displayReviews]
+
+    // Calculate duration based on constant pixel speed so the marquee always
+    // scrolls at the same comfortable pace regardless of how many cards exist.
+    // Each card is ~320px wide + 20px gap = 340px. Speed = 40px/s.
+    const CARD_PX = 340  // card minW (320) + gap (20)
+    const SPEED_PX_PER_S = 40
+    const animDuration = Math.round((displayReviews.length * CARD_PX) / SPEED_PX_PER_S)
 
     return (
         <Box w="full" py={{ base: '8', md: '12' }} position="relative">
@@ -210,7 +221,7 @@ const ReviewMarquee: React.FC = () => {
                     display="flex"
                     gap="5"
                     sx={{
-                        animation: 'scrollReviews 32s linear infinite',
+                        animation: `scrollReviews ${animDuration}s linear infinite`,
                         width: 'fit-content',
                         '&:hover': { animationPlayState: 'paused' },
                         '@keyframes scrollReviews': {
@@ -312,7 +323,7 @@ const ReviewMarquee: React.FC = () => {
                                     noOfLines={4}
                                     fontStyle="italic"
                                 >
-                                    "{review.comment || 'Tuyệt vời, nền tảng rất đáng tin cậy và hiệu quả!'}"
+                                    &ldquo;{review.comment || 'Tuyệt vời, nền tảng rất đáng tin cậy và hiệu quả!'}&rdquo;
                                 </Text>
                             </VStack>
 
