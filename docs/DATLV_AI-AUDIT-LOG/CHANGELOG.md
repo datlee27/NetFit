@@ -267,6 +267,7 @@ DD/MM/YYYY
 | 31 | Khôi phục User Management Admin: Ban/Unban Switch, Edit User Modal, Add User Modal & Phân quyền Admin vs PT | Đạt | `AdminUsers.tsx`, `UserController.cs`, `AuthService.cs` | Commit ef7329a |
 | 32 | Hiển thị Marquee đánh giá 4-5 sao của hội viên trên Landing Page, hỗ trợ trượt vô tận và lọc kiểm duyệt Admin | Đạt | `WebsiteReviewsController.cs`, `WebsiteReviewService.cs`, `ReviewMarquee.tsx`, `Landing.tsx` | Commit c89839f |
 | 33 | Chuẩn hóa Thẻ Bước bài tập (Step Cards), phân trang 10 dòng/trang & Animation gợn sóng cho User Management và Payments | Đạt | `WorkoutExerciseModal.tsx`, `AdminUsers.tsx`, `AdminPayments.tsx`, `format_exercise_descriptions.py` | Commit 39bfb15 |
+| 34 | Xây dựng hệ thống Đa ngôn ngữ (i18n EN/VI) toàn diện cho toàn bộ trang web, dịch 100% nội dung sang Tiếng Việt chuẩn | Đạt | `i18n/`, `LanguageSwitcher.tsx`, `Dashboard.tsx`, `Nutrition.tsx`, `AIChat.tsx`, `PTBooking.tsx`, `Pricing.tsx`, `Admin*.tsx`, `Login.tsx`, `Register.tsx` | Commit 3d5d375 |
 
 ## AI có hỗ trợ không?
 
@@ -491,3 +492,4 @@ Sinh viên/nhóm cam kết rằng nội dung changelog phản ánh đúng các t
 | 23 | Cập nhật luồng Github Actions để nạp file .env từ Secret Base64 | Đạt | .github/workflows/deploy-pages.yml | N/A |
 | 24 | Thêm Universal ErrorPage và React ErrorBoundary chống trắng trang | Đạt | ErrorPage.tsx, ErrorBoundary.tsx, router-container.tsx | Commit 8eee557 |
 | 25 | Phân trang 10 dòng & animation cho Reviews & Ratings và chuẩn hoá toàn bộ UI Admin sang tiếng Anh | Đạt | AdminReviews.tsx, AdminPayments.tsx, AdminDashboard.tsx | Commit 5129c39 |
+| 26 | Chuẩn hóa toàn bộ giao diện người dùng trên toàn hệ thống sang tiếng Anh ở tất cả các vai trò | Đạt | WorkoutExerciseModal.tsx, WebsiteReviewModal.tsx, Register.tsx, ErrorPage.tsx, ... | Commit 733718f |
