@@ -17,13 +17,13 @@ echo "======================================================="
 
 # 1. Kiểm tra và khởi động MySQL qua Homebrew
 echo "[1/4] Kiểm tra dịch vụ MySQL..."
-if ! lsof -i :3306 >/dev/null 2>&1; then
+if ! nc -z 127.0.0.1 3306 >/dev/null 2>&1 && ! lsof -i :3306 >/dev/null 2>&1; then
     echo "  -> Đang khởi động MySQL service (brew services start mysql)..."
     brew services start mysql >/dev/null 2>&1 || true
     sleep 2
 fi
 
-if lsof -i :3306 >/dev/null 2>&1; then
+if nc -z 127.0.0.1 3306 >/dev/null 2>&1 || lsof -i :3306 >/dev/null 2>&1; then
     echo "  ✅ MySQL đang chạy trên cổng 3306."
 else
     echo "  ⚠️ Cảnh báo: Chưa tìm thấy MySQL trên cổng 3306. Vui lòng kiểm tra lại dịch vụ MySQL."

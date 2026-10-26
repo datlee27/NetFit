@@ -9,7 +9,7 @@ echo "======================================================="
 
 # 1. MySQL Status
 echo -n "1. Database (MySQL 3306) : "
-if lsof -i :3306 >/dev/null 2>&1; then
+if nc -z 127.0.0.1 3306 >/dev/null 2>&1 || lsof -i :3306 >/dev/null 2>&1; then
     echo "🟢 ĐANG CHẠY"
 else
     echo "🔴 ĐÃ TẮT (Gõ: brew services start mysql)"
