@@ -268,7 +268,7 @@ DD/MM/YYYY
 | 32 | Hiển thị Marquee đánh giá 4-5 sao của hội viên trên Landing Page, hỗ trợ trượt vô tận và lọc kiểm duyệt Admin | Đạt | `WebsiteReviewsController.cs`, `WebsiteReviewService.cs`, `ReviewMarquee.tsx`, `Landing.tsx` | Commit c89839f |
 | 33 | Chuẩn hóa Thẻ Bước bài tập (Step Cards), phân trang 10 dòng/trang & Animation gợn sóng cho User Management và Payments | Đạt | `WorkoutExerciseModal.tsx`, `AdminUsers.tsx`, `AdminPayments.tsx`, `format_exercise_descriptions.py` | Commit 39bfb15 |
 | 34 | Xây dựng hệ thống Đa ngôn ngữ (i18n EN/VI) toàn diện cho toàn bộ trang web, dịch 100% nội dung sang Tiếng Việt chuẩn | Đạt | `i18n/`, `LanguageSwitcher.tsx`, `Dashboard.tsx`, `Nutrition.tsx`, `AIChat.tsx`, `PTBooking.tsx`, `Pricing.tsx`, `Admin*.tsx`, `Login.tsx`, `Register.tsx` | Commit 3d5d375 |
-| 35 | Khởi chạy Daemon Backend & Ngrok chạy ngầm độc lập macOS, chuẩn hoá 45 đánh giá website và fix múi giờ UTC+7 | Đạt | `WebsiteReviewService.cs`, `WebsiteReview.cs`, `start_netfit.sh`, `status_netfit.sh`, `stop_netfit.sh`, `data/fitnessproject_latest.sql` | Đang cập nhật |
+| 35 | Khởi chạy Daemon Backend & Ngrok chạy ngầm độc lập macOS, chuẩn hoá 45 đánh giá website và fix múi giờ UTC+7 | Đạt | `WebsiteReviewService.cs`, `WebsiteReview.cs`, `start_netfit.sh`, `status_netfit.sh`, `stop_netfit.sh`, `data/fitnessproject_latest.sql` | Commit 8283995 |
 
 ## AI có hỗ trợ không?
 

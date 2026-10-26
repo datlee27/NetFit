@@ -3086,7 +3086,7 @@ Toàn bộ script quản lý tiến trình macOS, mã nguồn sửa timezone Bac
 
 | Loại minh chứng | Nội dung |
 |---|---|
-| Link commit | Sẽ được cập nhật ngay sau khi commit |
+| Link commit | 82839956c5ac3fdffb2fdd3ae0c04e9ecc5e8750 |
 | File liên quan | `WebsiteReviewService.cs`, `WebsiteReview.cs`, `start_netfit.sh`, `status_netfit.sh`, `stop_netfit.sh`, `HUONG_DAN_CHAY_BE_NGROK_VA_FIX_LOI.md`, `data/fitnessproject_latest.sql` |
 | Screenshot | Đã chụp màn hình Admin Reviews đạt 45 feedback chuẩn, điểm trung bình 4.5★ và giờ ghi nhận chuẩn 07:55 |
 | Kết quả chạy/test | dotnet build pass 100% (0 errors, 0 warnings), npm run build pass 100% |

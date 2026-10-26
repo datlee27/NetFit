@@ -2667,7 +2667,7 @@ Backend và Ngrok chạy ngầm bền bỉ, 45 đánh giá hiển thị mượt 
 
 | Loại minh chứng | Nội dung |
 |---|---|
-| Link commit | Sẽ được cập nhật sau khi commit |
+| Link commit | 82839956c5ac3fdffb2fdd3ae0c04e9ecc5e8750 |
 | File liên quan | `WebsiteReviewService.cs`, `WebsiteReview.cs`, `start_netfit.sh`, `status_netfit.sh`, `stop_netfit.sh`, `data/fitnessproject_latest.sql`, `HUONG_DAN_CHAY_BE_NGROK_VA_FIX_LOI.md` |
 | Screenshot | Đã kiểm thử giao diện Admin Reviews với 45 đánh giá, rating 4.51★ và giờ ghi nhận 07:55 chuẩn |
 | Kết quả chạy/test | dotnet build pass 100%, npm run build pass 100% |
