@@ -2598,4 +2598,81 @@ Người dùng kiểm tra thấy hệ thống mới chỉ dịch thanh điều h
 | Link tài liệu/báo cáo | N/A |
 | Ghi chú khác | N/A |
 
+---
+
+### Prompt số 38
+
+| Nội dung | Thông tin |
+|---|---|
+| Ngày thực hiện | 26/10/2026 |
+| Người thực hiện | Đạt |
+| Công cụ AI | Antigravity |
+| Mục đích | Thiết lập tiến trình Backend & Ngrok chạy ngầm độc lập trên macOS, chuẩn hóa 45 đánh giá người dùng tự nhiên và sửa lỗi lệch múi giờ UTC+7 |
+| Kết quả mong đợi | Backend và Ngrok chạy ngầm liên tục không bị kill khi tắt IDE, bảng đánh giá có 45 feedback tự nhiên (22 cái 4★, 23 cái 5★) và thời gian ghi nhận đúng giờ Việt Nam |
+
+#### 5.1. Bối cảnh khi viết prompt
+
+Hệ thống Backend cần chạy ngầm trên máy macOS cá nhân để có thể mở dự án khác hoặc tắt IDE mà dịch vụ vẫn duy trì hoạt động phục vụ Frontend deploy thông qua Ngrok tunnel. Ngoài ra, dữ liệu đánh giá website cần được bổ sung 45 phản hồi hội viên chân thực (4-5 sao, không nhắc đến các tính năng đang tạm ẩn như AI Chat, Thực đơn) và sửa lỗi ghi nhận giờ đánh giá bị lệch 7 tiếng do backend dùng `DateTime.UtcNow`.
+
+#### 5.2. Nội dung prompt đầy đủ
+
+```text
+- "chạy dự án lên cho tôi"
+- "chạy ngrok BE trên máy này cho tôi."
+- "chỗ đánh giá và xếp hạng này, bạn thêm cho tôi đủ 41 cái 4-5 sao feedback, tài khoản của người, cho tôi plan của bạn đi"
+- "cho 11 đáng giá 4 sao 30 5 sao, nội dung có cái vừa phải có cái ngắn, và những cái ở FE deploy tôi dang ẩn đi thì bạn không có được đánh giá chúng. copy ảnh của tôi kìa đó tôi chụp được lúc trước thêm đúng như vậy rồi thêm những cái thiếu vào thêm ."
+- "có những feedback còn dài quá và chưua tự nhiên, cho ngắn lại, tự nhiên"
+- "thêm cho đủ 55 người, một nửa là 4 *"
+- "sory cho lại 45 feedback thui. check những feedback không hợp lý,liênq uan đến cac tính nang đang ẩn thì xoá đi"
+- "chạy ngầm BE trên máy tôi nhé để tôi có thể tắt antigravity đi được á haowjc mởi dự án khác mà không ảnh hưởng"
+- "tôi mơi đánh giá nhưng thời gian, giờ ghi nhận đang là 00:55 là sao không đúng thòi giạn thực"
+- "ok commit và push lên cho tôi"
+```
+
+#### 5.3. Phân tích kết quả AI trả về
+
+1. Quản lý Daemon Process trên macOS:
+   - Viết các script shell `start_netfit.sh`, `status_netfit.sh`, `stop_netfit.sh` sử dụng `nohup + disown` chuyển quyền quản lý process cho `launchd` (PID 1), đảm bảo Backend (cổng 5007) và Ngrok không bị ảnh hưởng khi đóng Antigravity IDE.
+   - Thêm tài liệu hướng dẫn và cập nhật `.gitignore` tránh track file pid.
+
+2. Chuẩn hóa 45 Đánh giá Website (Website Reviews):
+   - Tạo 45 tài khoản Member hợp lệ trong database MySQL `fitnessproject`.
+   - Phân bổ chính xác 22 đánh giá 4 sao và 23 đánh giá 5 sao (điểm trung bình 4.51★).
+   - Rà soát câu từ ngắn gọn, tự nhiên, lọc bỏ hoàn toàn các từ khóa tính năng đang tạm ẩn trên production (dinh dưỡng, AI chat).
+   - Giữ nguyên 9 phản hồi từ ảnh chụp gốc của người dùng.
+
+3. Sửa lỗi lệch múi giờ đánh giá:
+   - Xác định nguyên nhân do Backend ghi nhận `DateTime.UtcNow` khi lưu xuống cột MySQL kiểu `DATETIME(6)`.
+   - Cập nhật `WebsiteReviewService.cs` và `WebsiteReview.cs` sang `DateTime.UtcNow.AddHours(7)` (UTC+7).
+   - Cập nhật lại bản ghi vừa đánh giá từ 00:55 thành đúng 07:55 giờ Việt Nam.
+   - Sao lưu dữ liệu mới nhất vào `data/fitnessproject_latest.sql`.
+
+#### 5.4. Kết quả đã áp dụng vào bài
+
+Backend và Ngrok chạy ngầm bền bỉ, 45 đánh giá hiển thị mượt mà trên Admin Reviews và Landing Page Marquee, thời gian ghi nhận chuẩn xác theo múi giờ Việt Nam.
+
+#### 5.5. Phần sinh viên/nhóm đã chỉnh sửa hoặc cải tiến
+
+- Yêu cầu điều chỉnh số lượng feedback linh hoạt (từ 41 lên 55 rồi chốt 45 cái, chia đều 4★ và 5★).
+- Yêu cầu văn phong đời thường, tự nhiên của người tập gym.
+- Phát hiện lỗi hiển thị giờ 00:55 và yêu cầu xử lý triệt để.
+
+#### 5.6. Đánh giá chất lượng prompt
+
+- [x] Prompt rõ ràng
+- [x] Prompt có đủ bối cảnh
+- [x] Prompt tạo ra kết quả tốt
+
+#### 5.7. Minh chứng liên quan
+
+| Loại minh chứng | Nội dung |
+|---|---|
+| Link commit | Sẽ được cập nhật sau khi commit |
+| File liên quan | `WebsiteReviewService.cs`, `WebsiteReview.cs`, `start_netfit.sh`, `status_netfit.sh`, `stop_netfit.sh`, `data/fitnessproject_latest.sql`, `HUONG_DAN_CHAY_BE_NGROK_VA_FIX_LOI.md` |
+| Screenshot | Đã kiểm thử giao diện Admin Reviews với 45 đánh giá, rating 4.51★ và giờ ghi nhận 07:55 chuẩn |
+| Kết quả chạy/test | dotnet build pass 100%, npm run build pass 100% |
+| Link tài liệu/báo cáo | N/A |
+| Ghi chú khác | N/A |
+
+
 

@@ -3017,4 +3017,89 @@ Bài học rút ra:
 2. Fallback an toàn: Luôn cung cấp chuỗi fallback tiếng Anh trực tiếp trong hàm gọi `t('key', 'Fallback')` giúp giao diện không bao giờ bị vỡ hay hiển thị key trống nếu có key chưa kịp tải hoặc thiếu sót.
 ```
 
+---
+
+### Lần sử dụng AI số 39
+
+| Nội dung | Thông tin |
+|---|---|
+| Ngày sử dụng | 26/10/2026 |
+| Công cụ AI | Antigravity |
+| Mục đích sử dụng | Khởi chạy hệ thống Backend & Ngrok chạy ngầm độc lập trên macOS, chuẩn hoá 45 đánh giá website chân thực và khắc phục lệch múi giờ UTC+7 |
+| Phần việc liên quan | Backend (.NET 9 WebApi), Database (MySQL Seed), DevOps Shell Scripts (macOS Daemon) |
+| Mức độ sử dụng | Sinh chính nội dung |
+
+#### 4.1. Prompt đã sử dụng
+
+```text
+- "chạy dự án lên cho tôi"
+- "chạy ngrok BE trên máy này cho tôi."
+- "chỗ đánh giá và xếp hạng này, bạn thêm cho tôi đủ 41 cái 4-5 sao feedback, tài khoản của người, cho tôi plan của bạn đi"
+- "cho 11 đáng giá 4 sao 30 5 sao, nội dung có cái vừa phải có cái ngắn, và những cái ở FE deploy tôi dang ẩn đi thì bạn không có được đánh giá chúng. copy ảnh của tôi kìa đó tôi chụp được lúc trước thêm đúng như vậy rồi thêm những cái thiếu vào thêm ."
+- "có những feedback còn dài quá và chưua tự nhiên, cho ngắn lại, tự nhiên"
+- "thêm cho đủ 55 người, một nửa là 4 *"
+- "sory cho lại 45 feedback thui. check những feedback không hợp lý,liênq uan đến cac tính nang đang ẩn thì xoá đi"
+- "chạy ngầm BE trên máy tôi nhé để tôi có thể tắt antigravity đi được á haowjc mởi dự án khác mà không ảnh hưởng"
+- "tôi mơi đánh giá nhưng thời gian, giờ ghi nhận đang là 00:55 là sao không đúng thòi giạn thực"
+- "ok commit và push lên cho tôi"
+```
+
+#### 4.2. Kết quả AI gợi ý
+
+```text
+1. Vận hành & Chạy ngầm hệ thống độc lập trên macOS:
+   - Xây dựng bộ script điều khiển chạy ngầm độc lập dành riêng cho macOS:
+     + `start_netfit.sh`: Kiểm tra MySQL 3306, build Backend .NET 9 WebAPI, khởi động Backend trên cổng 5007 và Ngrok bằng kỹ thuật `nohup + disown` tách hoàn toàn khỏi TTY/Process tree của Antigravity IDE (gán quyền cho launchd PID 1).
+     + `status_netfit.sh`: Kiểm tra trạng thái Database, Backend 5007 và kiểm tra kết nối trực tiếp đến Public Ngrok URL.
+     + `stop_netfit.sh`: Dừng an toàn toàn bộ tiến trình Backend và Ngrok, giải phóng cổng 5007.
+   - Cập nhật tài liệu vận hành HUONG_DAN_CHAY_BE_NGROK_VA_FIX_LOI.md và frontend/.env trỏ chính xác về Ngrok URL trên máy.
+
+2. Chuẩn hoá 45 Đánh giá Website (Website Reviews):
+   - Tạo đồng bộ 45 tài khoản hội viên thật (Member, role_id = 3, ACTIVE) trong bảng `users` với đầy đủ họ tên, email thực tế.
+   - Phân bổ chuẩn xác: 22 đánh giá 4 sao và 23 đánh giá 5 sao (điểm trung bình hệ thống đạt 4.51 / 5.0).
+   - Khôi phục chính xác 100% 9 đánh giá từ ảnh chụp ban đầu của người dùng.
+   - Viết các phản hồi ngắn gọn, tự nhiên, đậm chất hội viên tập gym đời thực (VD: "quá xịn xò", "10 điểm không có nhưng", "Anh PT chỉnh form siêu có tâm luôn", "App tập cuốn xỉu, ngày nào cũng vô cày", "Đếm giờ nghỉ chuẩn, khỏi phải ngó đồng hồ").
+   - Rà soát và loại bỏ tuyệt đối các từ khoá liên quan đến tính năng đang tạm ẩn trên Frontend deploy (Dinh dưỡng / Thực đơn, AI Chat).
+
+3. Khắc phục lỗi lệch múi giờ ghi nhận đánh giá (Fix Timezone Bug):
+   - Phát hiện nguyên nhân: Backend sử dụng `DateTime.UtcNow` làm giờ ghi nhận bị lùi 7 tiếng so với giờ Việt Nam khi lưu vào MySQL kiểu DATETIME(6).
+   - Cập nhật trong `WebsiteReviewService.cs` và entity `WebsiteReview.cs` sang `DateTime.UtcNow.AddHours(7)` (UTC+7).
+   - Sửa giờ đánh giá vừa tạo từ 00:55 thành đúng 07:55 thực tế ở Việt Nam.
+   - Xuất dữ liệu Database mới nhất vào file `data/fitnessproject_latest.sql` (560 KB).
+```
+
+#### 4.3. Phần sinh viên/nhóm đã sử dụng từ AI
+
+```text
+Toàn bộ script quản lý tiến trình macOS, mã nguồn sửa timezone Backend, script seed 45 đánh giá và file dump database `data/fitnessproject_latest.sql`.
+```
+
+#### 4.4. Phần sinh viên/nhóm tự chỉnh sửa hoặc cải tiến
+
+```text
+- Trực tiếp kiểm tra giao diện Admin Đánh giá & Xếp hạng để đánh giá độ tự nhiên của văn phong feedback.
+- Yêu cầu điều chỉnh quy mô đánh giá phù hợp (từ 41 lên 55 rồi chốt chuẩn 45 đánh giá, cân bằng 50/50 tỷ lệ 4 sao và 5 sao).
+- Phát hiện lỗi lệch múi giờ 00:55 và yêu cầu xử lý triệt để về đúng giờ thực Việt Nam.
+```
+
+#### 4.5. Minh chứng
+
+| Loại minh chứng | Nội dung |
+|---|---|
+| Link commit | Sẽ được cập nhật ngay sau khi commit |
+| File liên quan | `WebsiteReviewService.cs`, `WebsiteReview.cs`, `start_netfit.sh`, `status_netfit.sh`, `stop_netfit.sh`, `HUONG_DAN_CHAY_BE_NGROK_VA_FIX_LOI.md`, `data/fitnessproject_latest.sql` |
+| Screenshot | Đã chụp màn hình Admin Reviews đạt 45 feedback chuẩn, điểm trung bình 4.5★ và giờ ghi nhận chuẩn 07:55 |
+| Kết quả chạy/test | dotnet build pass 100% (0 errors, 0 warnings), npm run build pass 100% |
+| Link video demo | N/A |
+| Ghi chú khác | N/A |
+
+#### 4.6. Nhận xét cá nhân/nhóm
+
+```text
+Bài học rút ra:
+1. Quản lý Background Process trên Unix/macOS: Khi triển khai các dịch vụ dev cục bộ cần chạy độc lập với IDE, sử dụng `nohup ... </dev/null &` kết hợp `disown` giúp tiến trình tách rời khỏi TTY session và được reparent về init/launchd (PID 1), đảm bảo hệ thống không bị ngắt đột ngột khi đóng terminal hoặc chuyển workspace.
+2. Xử lý múi giờ nhất quán giữa Database và Frontend: Với các hệ thống lưu trữ kiểu DATETIME không chứa timezone offset, cần thống nhất quy chuẩn ghi nhận (sử dụng UTC+7 cố định cho thị trường Việt Nam) để tránh hiện tượng hiển thị sai lệch giờ khi chuyển đổi qua JSON serializer.
+```
+
+
 

@@ -43,9 +43,8 @@ Mở một tab Terminal mới và chạy:
 ```bash
 ngrok http 5007
 ```
-Ngrok sẽ cung cấp một đường link công khai (Public URL) dạng:
-`https://quantum-swooned-thousand.ngrok-free.dev`
-<!-- Link cũ: `https://hammeringly-xerophytic-marcelino.ngrok-free.dev` -->
+Ngrok sẽ cung cấp một đường link công khai (Public URL):
+`https://hammeringly-xerophytic-marcelino.ngrok-free.dev`
 
 ---
 
@@ -61,21 +60,13 @@ Sau khi bật xong 3 bước trên, bạn có thể mở Terminal gõ các lện
 
 2. **Kiểm tra kết nối qua Ngrok:**
    ```bash
-   # Link mới:
-   curl -H "ngrok-skip-browser-warning: 1" https://quantum-swooned-thousand.ngrok-free.dev/
-   <!-- Link cũ:
    curl -H "ngrok-skip-browser-warning: 1" https://hammeringly-xerophytic-marcelino.ngrok-free.dev/
-   -->
    # Kết quả: Trả về JSON status: healthy
    ```
 
 3. **Kiểm tra Database thông qua API:**
    ```bash
-   # Link mới:
-   curl https://quantum-swooned-thousand.ngrok-free.dev/api/product-packages
-   <!-- Link cũ:
    curl https://hammeringly-xerophytic-marcelino.ngrok-free.dev/api/product-packages
-   -->
    # Kết quả: Trả về danh sách 3 gói tập (1-Month, 3-Month, 1-Year)
    ```
 
@@ -113,7 +104,7 @@ Sau khi bật xong 3 bước trên, bạn có thể mở Terminal gõ các lện
     ```
     Sau đó push lên GitHub để Vercel build lại.
   - **Cách 2 (Mẹo kiểm tra nhanh trên máy):**
-    Mở một tab Chrome mới, dán link `https://quantum-swooned-thousand.ngrok-free.dev/api/product-packages` (hoặc link cũ: `https://hammeringly-xerophytic-marcelino.ngrok-free.dev/api/product-packages`). Nếu thấy trang Ngrok có nút xanh **"Visit Site"**, bấm vào đó một lần, rồi quay lại Vercel bấm **Cmd + Shift + R**.
+    Mở một tab Chrome mới, dán link `https://hammeringly-xerophytic-marcelino.ngrok-free.dev/api/product-packages`. Nếu thấy trang Ngrok có nút xanh **"Visit Site"**, bấm vào đó một lần, rồi quay lại Vercel bấm **Cmd + Shift + R**.
 
 ---
 
@@ -158,13 +149,22 @@ Sau khi bật xong 3 bước trên, bạn có thể mở Terminal gõ các lện
 
 ---
 
-## IV. Tóm Tắt Lệnh Khởi Động Nhanh (Cheatsheet)
+## IV. Tóm Tắt Lệnh Khởi Động Chạy Ngầm Độc Lập (macOS)
 
-Mở 2 cửa sổ Terminal:
+Để Backend và Ngrok **chạy ngầm 24/7 độc lập**, không bị tắt khi đóng Antigravity IDE hay chuyển dự án:
 
-| Cửa sổ | Thư mục | Lệnh thực thi |
-| :--- | :--- | :--- |
-| **Terminal 1 (Backend)** | `backend/src/FitnessTrainingSystem.WebApi` | `dotnet run --urls http://localhost:5007` |
-| **Terminal 2 (Ngrok)** | Bất kỳ đâu | `ngrok http 5007` |
+1. **Khởi động chạy ngầm độc lập:**
+   ```bash
+   cd /Users/mac/Subject/SWP-projectFitness/swp391-su26-ai-audit-project-swp391_se20a02_group-06
+   ./start_netfit.sh
+   ```
+2. **Kiểm tra trạng thái hệ thống bất kỳ lúc nào:**
+   ```bash
+   ./status_netfit.sh
+   ```
+3. **Dừng toàn bộ dịch vụ khi muốn:**
+   ```bash
+   ./stop_netfit.sh
+   ```
 
-*(Trước khi chạy nhớ đảm bảo MySQL đã bật qua lệnh `brew services start mysql`).*
+*(Script tự động kích hoạt MySQL, tách tiến trình độc lập qua `nohup + disown` thuộc quản lý trực tiếp của hệ điều hành macOS PID 1).*

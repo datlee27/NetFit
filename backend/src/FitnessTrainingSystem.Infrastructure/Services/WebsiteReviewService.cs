@@ -71,7 +71,7 @@ public class WebsiteReviewService : IWebsiteReviewService
             Rating = dto.Rating,
             Comment = dto.Comment?.Trim(),
             IsHidden = false,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTime.UtcNow.AddHours(7)
         };
 
         _context.WebsiteReviews.Add(review);
@@ -138,7 +138,7 @@ public class WebsiteReviewService : IWebsiteReviewService
         if (review == null) return false;
 
         review.IsHidden = !review.IsHidden;
-        review.UpdatedAt = DateTime.UtcNow;
+        review.UpdatedAt = DateTime.UtcNow.AddHours(7);
         await _context.SaveChangesAsync();
 
         _logger.LogInformation("Review {ReviewId} visibility toggled to IsHidden={IsHidden}.", reviewId, review.IsHidden);
