@@ -29,12 +29,12 @@ public class NutritionController : ControllerBase
     }
 
     [HttpGet("daily")]
-    public async Task<ActionResult<DailyNutritionSummaryDto>> GetDailySummary([FromQuery] DateTime date)
+    public async Task<ActionResult<DailyNutritionSummaryDto>> GetDailySummary([FromQuery] DateTime date, [FromQuery] decimal? caloriesBurned = null)
     {
         try
         {
             var userId = GetCurrentUserId();
-            var summary = await _nutritionService.GetDailySummaryAsync(userId, date);
+            var summary = await _nutritionService.GetDailySummaryAsync(userId, date, caloriesBurned);
             return Ok(summary);
         }
         catch (Exception ex)
@@ -66,6 +66,36 @@ public class NutritionController : ControllerBase
             var result = await _nutritionService.UpdateReminderSettingsAsync(userId, dto);
             if (!result) return BadRequest(new { message = "Failed to update reminder settings." });
             return Ok(new { success = true });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
+    [HttpGet("workout-recovery")]
+    public async Task<ActionResult<WorkoutRecoveryNutritionDto>> GetWorkoutRecovery([FromQuery] decimal? caloriesBurned)
+    {
+        try
+        {
+            var userId = GetCurrentUserId();
+            var recovery = await _nutritionService.GetWorkoutRecoveryNutritionAsync(userId, caloriesBurned);
+            return Ok(recovery);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
+    [HttpPost("food")]
+    public async Task<ActionResult<DailyNutritionSummaryDto>> LogFood([FromQuery] DateTime date, [FromBody] LogFoodDto dto)
+    {
+        try
+        {
+            var userId = GetCurrentUserId();
+            var summary = await _nutritionService.LogFoodAsync(userId, date, dto);
+            return Ok(summary);
         }
         catch (Exception ex)
         {

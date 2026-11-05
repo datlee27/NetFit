@@ -16,6 +16,7 @@ export interface DailyNutritionSummary {
     fitnessGoal: string
     waterReminderStartTime?: string
     waterReminderEndTime?: string
+    workoutRecovery?: WorkoutRecoveryNutrition
 }
 
 export interface MacroSummary {
@@ -24,8 +25,64 @@ export interface MacroSummary {
     percentage: number
 }
 
-export const getDailySummary = async (date: string): Promise<DailyNutritionSummary> => {
-    const response = await apiClient.get(`/nutrition/daily?date=${date}`)
+export interface RecoveryNutrientAdvice {
+    nutrient: string
+    targetAmount: string
+    purpose: string
+    priority: string
+    bestFoodSources?: string
+}
+
+export interface RecommendedFood {
+    id: number
+    name: string
+    servingSize?: string
+    unit?: string
+    calories: number
+    protein: number
+    carbs: number
+    fat: number
+    imageUrl?: string
+    category: string
+    categoryLabel: string
+    recoveryBenefit: string
+}
+
+export interface SuggestedMealSection {
+    mealType: 'Breakfast' | 'Lunch' | 'Dinner' | 'Snack' | string
+    mealTitle: string
+    calories: number
+    protein: number
+    carbs: number
+    fat: number
+    foods: RecommendedFood[]
+}
+
+export interface SuggestedRecoveryCombo {
+    title: string
+    mealType?: string
+    targetGoal?: string
+    description: string
+    totalCalories: number
+    totalProtein: number
+    totalCarbs: number
+    totalFat: number
+    foods: RecommendedFood[]
+    meals?: SuggestedMealSection[]
+}
+
+export interface WorkoutRecoveryNutrition {
+    caloriesBurned: number
+    recommendedReplenishCalories: number
+    guidanceMessage: string
+    nutrientsToReplenish: RecoveryNutrientAdvice[]
+    recommendedFoods: RecommendedFood[]
+    suggestedCombos: SuggestedRecoveryCombo[]
+}
+
+export const getDailySummary = async (date: string, caloriesBurned?: number): Promise<DailyNutritionSummary> => {
+    const params = caloriesBurned != null ? `&caloriesBurned=${caloriesBurned}` : ''
+    const response = await apiClient.get(`/nutrition/daily?date=${date}${params}`)
     return response.data
 }
 
@@ -36,6 +93,17 @@ export const logWater = async (date: string, glasses: number = 1): Promise<Daily
 
 export const updateReminderSettings = async (startTime: string, endTime: string): Promise<{ success: boolean }> => {
     const response = await apiClient.put('/nutrition/reminder-settings', { startTime, endTime })
+    return response.data
+}
+
+export const getWorkoutRecoveryNutrition = async (caloriesBurned?: number): Promise<WorkoutRecoveryNutrition> => {
+    const params = caloriesBurned != null ? `?caloriesBurned=${caloriesBurned}` : ''
+    const response = await apiClient.get(`/nutrition/workout-recovery${params}`)
+    return response.data
+}
+
+export const logFood = async (date: string, foodId: number, servings: number = 1): Promise<DailyNutritionSummary> => {
+    const response = await apiClient.post(`/nutrition/food?date=${date}`, { foodId, servings })
     return response.data
 }
 

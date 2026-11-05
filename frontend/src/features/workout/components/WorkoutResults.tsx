@@ -171,13 +171,16 @@ const WorkoutResults: React.FC = () => {
     const [isReviewModalOpen, setIsReviewModalOpen] = useState<boolean>(false)
     const navigate = useNavigate()
 
-    const finishWorkoutAndNavigate = () => {
+    const [lastBurnedCalories, setLastBurnedCalories] = useState<number>(0)
+
+    const finishWorkoutAndNavigate = (burnedCalories?: number) => {
+        const cal = burnedCalories ?? lastBurnedCalories
         if (data?.planType === 'weekly' && weeklyPlans && currentDayIndex < weeklyPlans.length - 1) {
             setCurrentDayIndex(currentDayIndex + 1)
             window.scrollTo({ top: 0, behavior: 'smooth' })
         } else {
             resetWorkout()
-            navigate('/nutrition')
+            navigate('/nutrition', { state: { justFinishedWorkout: true, workoutCalories: cal } })
         }
     }
 
@@ -208,6 +211,7 @@ const WorkoutResults: React.FC = () => {
         const doneExercises = targetExercises.filter(e => e.isDone)
         const totalDuration = currentDay ? currentDay.targetDurationMinutes : (data?.duration || 30)
         const totalCalories = doneExercises.reduce((sum, ex) => sum + (ex.caloriesBurned ?? 30), 0)
+        setLastBurnedCalories(totalCalories)
         
         try {
             let sessionId = targetSessionId
@@ -239,7 +243,7 @@ const WorkoutResults: React.FC = () => {
             console.error("Failed to complete session:", error)
         }
 
-        finishWorkoutAndNavigate()
+        finishWorkoutAndNavigate(totalCalories)
     }
 
     const handleModalExerciseComplete = () => {
