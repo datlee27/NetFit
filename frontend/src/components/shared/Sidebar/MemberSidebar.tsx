@@ -12,18 +12,19 @@ import { useTranslation } from 'react-i18next'
 import {
     FiGrid,
     FiActivity,
-    FiBookOpen,
     FiBarChart2,
     FiCalendar,
     FiUser,
 } from 'react-icons/fi'
+import { Utensils, Bot } from 'lucide-react'
 
 const navItems = [
     { key: 'dashboard', defaultLabel: 'Dashboard', icon: FiGrid, path: '/dashboard' },
     { key: 'workouts', defaultLabel: 'Workouts', icon: FiActivity, path: '/workouts' },
-    { key: 'exercises', defaultLabel: 'Exercises', icon: FiBookOpen, path: '/exercises' },
+    { key: 'nutrition', defaultLabel: 'Nutrition', icon: Utensils, path: '/nutrition' },
     { key: 'progress', defaultLabel: 'Progress', icon: FiBarChart2, path: '/progress' },
     { key: 'ptBooking', defaultLabel: 'PT Booking', icon: FiCalendar, path: '/pt-booking' },
+    { key: 'aiChat', defaultLabel: 'AI Chat', icon: Bot, path: '/ai-chat' },
 ]
 
 interface MemberSidebarProps {

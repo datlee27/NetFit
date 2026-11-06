@@ -188,23 +188,35 @@ try
     using var scope = app.Services.CreateScope();
     var dbContext = scope.ServiceProvider.GetRequiredService<FitnessTrainingSystem.Infrastructure.Persistence.ApplicationDbContext>();
     
-    void SafeExecuteSql(string sql)
+    void AddColumnIfNotExists(string table, string column, string definition)
     {
-        try { dbContext.Database.ExecuteSqlRaw(sql); } catch { }
+        try
+        {
+            var conn = dbContext.Database.GetDbConnection();
+            if (conn.State != System.Data.ConnectionState.Open)
+                conn.Open();
+
+            using var cmd = conn.CreateCommand();
+            cmd.CommandText = $"SELECT COUNT(*) FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = '{table}' AND COLUMN_NAME = '{column}'";
+            var count = Convert.ToInt32(cmd.ExecuteScalar());
+            if (count == 0)
+            {
+                cmd.CommandText = $"ALTER TABLE `{table}` ADD COLUMN `{column}` {definition};";
+                cmd.ExecuteNonQuery();
+            }
+        }
+        catch { }
     }
 
-    SafeExecuteSql("ALTER TABLE users ADD COLUMN refresh_token longtext;");
-    SafeExecuteSql("ALTER TABLE users ADD COLUMN refresh_token_expiry_time datetime(6);");
-    
-    SafeExecuteSql("ALTER TABLE exercises ADD COLUMN is_draft tinyint(1) NOT NULL DEFAULT 0;");
-    
-    SafeExecuteSql("ALTER TABLE schedules ADD COLUMN order_code bigint NULL;");
-    SafeExecuteSql("ALTER TABLE schedules ADD COLUMN price decimal(18,2) NULL;");
-    SafeExecuteSql("ALTER TABLE schedules ADD COLUMN description longtext NULL;");
-    
-    SafeExecuteSql("ALTER TABLE pt_profiles ADD COLUMN coaching_philosophy varchar(1000) NULL;");
-    SafeExecuteSql("ALTER TABLE pt_profiles ADD COLUMN session_rate decimal(18,2) NULL;");
-    SafeExecuteSql("ALTER TABLE EmailOTP ADD COLUMN attempt_count int NOT NULL DEFAULT 0;");
+    AddColumnIfNotExists("users", "refresh_token", "longtext");
+    AddColumnIfNotExists("users", "refresh_token_expiry_time", "datetime(6)");
+    AddColumnIfNotExists("exercises", "is_draft", "tinyint(1) NOT NULL DEFAULT 0");
+    AddColumnIfNotExists("schedules", "order_code", "bigint NULL");
+    AddColumnIfNotExists("schedules", "price", "decimal(18,2) NULL");
+    AddColumnIfNotExists("schedules", "description", "longtext NULL");
+    AddColumnIfNotExists("pt_profiles", "coaching_philosophy", "varchar(1000) NULL");
+    AddColumnIfNotExists("pt_profiles", "session_rate", "decimal(18,2) NULL");
+    AddColumnIfNotExists("EmailOTP", "attempt_count", "int NOT NULL DEFAULT 0");
 }
 catch { }
 

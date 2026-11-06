@@ -21,10 +21,10 @@ import ErrorPage from "../pages/ErrorPage";
 import Dashboard from "../pages/member/Dashboard";
 import Workouts from "../pages/member/Workouts";
 import ExerciseLibrary from "../pages/member/exercises/ExerciseLibrary";
-// import Nutrition from "../pages/member/Nutrition";
+import Nutrition from "../pages/member/Nutrition";
 import Progress from "../pages/member/Progress";
 import PTBooking from "../pages/member/PTBooking";
-// import AIChat from "../pages/member/AIChat";
+import AIChat from "../pages/member/AIChat";
 import Profile from "../pages/member/Profile";
 
 // Admin & PT Area
@@ -107,14 +107,10 @@ const RouterContainer = () => {
             <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
             <Route path="/workouts" element={<PrivateRoute><Workouts /></PrivateRoute>} />
             <Route path="/exercises" element={<PrivateRoute><ExerciseLibrary /></PrivateRoute>} />
-            {/* Temporarily hidden for production:
-            <Route path="/nutrition" element={<PrivateRoute><Nutrition /></PrivateRoute>} /> */}
-            <Route path="/nutrition" element={<Navigate to="/dashboard" replace />} />
+            <Route path="/nutrition" element={<PrivateRoute><Nutrition /></PrivateRoute>} />
             <Route path="/progress" element={<PrivateRoute><Progress /></PrivateRoute>} />
             <Route path="/pt-booking" element={<PrivateRoute><PTBooking /></PrivateRoute>} />
-            {/* Temporarily hidden for production:
-            <Route path="/ai-chat" element={<PrivateRoute><AIChat /></PrivateRoute>} /> */}
-            <Route path="/ai-chat" element={<Navigate to="/dashboard" replace />} />
+            <Route path="/ai-chat" element={<PrivateRoute><AIChat /></PrivateRoute>} />
             <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
 
             {/* 404 Catch-all — Show error page instead of silent redirect */}
