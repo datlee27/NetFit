@@ -132,7 +132,10 @@ const WorkoutSetup: React.FC<WorkoutSetupProps> = ({ onComplete }) => {
             return !!form.planType
         }
         if (step === 1) return !!form.goal
-        if (step === 2) return form.muscles.length > 0
+        if (step === 2) {
+            if (form.planType === 'weekly') return true
+            return form.muscles.length > 0
+        }
         return true
     }
 
@@ -153,7 +156,14 @@ const WorkoutSetup: React.FC<WorkoutSetupProps> = ({ onComplete }) => {
     const stepMeta = [
         { title: t('workouts.planType', 'Plan Type'), sub: t('workouts.planTypeDesc', 'Do you want a single day or a full week plan?') },
         { title: t('workouts.trainingGoal', 'Training Goal'), sub: t('workouts.trainingGoalDesc', 'Choose your main goal for the AI to adjust your program.') },
-        { title: t('workouts.targetMuscles', 'Target Muscles'), sub: t('workouts.targetMusclesDesc', 'Select the target muscles you want NETFIT to focus on.') },
+        { 
+            title: form.planType === 'weekly' 
+                ? t('workouts.weeklyInjuriesTitle', 'Injuries / Pain (Optional)')
+                : t('workouts.targetMuscles', 'Target Muscles'), 
+            sub: form.planType === 'weekly' 
+                ? t('workouts.weeklyInjuriesSub', 'Select any areas where you feel pain so your weekly schedule avoids them.')
+                : t('workouts.targetMusclesDesc', 'Select the target muscles you want NETFIT to focus on.') 
+        },
     ]
 
     return (
@@ -241,16 +251,28 @@ const WorkoutSetup: React.FC<WorkoutSetupProps> = ({ onComplete }) => {
                         </Stack>
                     )}
 
-                    {/* ── STEP 2: Target muscles ── */}
+                    {/* ── STEP 2: Target muscles / Pain Selection ── */}
                     {step === 2 && (
                         <Flex direction={{ base: 'column', md: 'row' }} gap="5" h="100%">
                             {/* Left: step sidebar */}
                             <Box w={{ base: 'full', md: '160px' }} flexShrink={0}>
                                 <Stack spacing="4" mb="5">
                                     {[
-                                        { label: 'Plan', sub: 'Daily or Weekly', done: true },
-                                        { label: 'Goal', sub: 'Goal & Level', active: true },
-                                        { label: 'Muscles', sub: 'Muscle Targeting', done: false },
+                                        { 
+                                            label: t('workouts.planType', 'Plan'), 
+                                            sub: form.planType === 'weekly' ? t('workouts.weeklyPlan', 'Weekly') : t('workouts.dailyPlan', 'Daily'), 
+                                            done: true 
+                                        },
+                                        { 
+                                            label: t('workouts.goal', 'Goal'), 
+                                            sub: t('workouts.goalAndLevel', 'Goal & Level'), 
+                                            done: true 
+                                        },
+                                        { 
+                                            label: form.planType === 'weekly' ? t('workouts.injuriesPain', 'Injuries / Pain') : t('workouts.muscles', 'Muscles'), 
+                                            sub: form.planType === 'weekly' ? t('workouts.avoidPain', 'Avoid Pain') : t('workouts.targeting', 'Muscle Targeting'), 
+                                            active: true 
+                                        },
                                     ].map((item, i) => (
                                         <HStack key={i} spacing="3" align="flex-start">
                                             <Box
@@ -282,8 +304,8 @@ const WorkoutSetup: React.FC<WorkoutSetupProps> = ({ onComplete }) => {
                                     ))}
                                 </Stack>
 
-                                {/* Selected zones chips */}
-                                {form.muscles.length > 0 && (
+                                {/* Selected zones chips (Only for Daily plans) */}
+                                {form.planType !== 'weekly' && form.muscles.length > 0 && (
                                     <Box>
                                         <Text fontSize="9px" fontWeight="700" color="#8A8A93" textTransform="uppercase" letterSpacing="wider" mb="2">
                                             {t('workouts.selectedZones', 'Selected Zones')}
@@ -320,8 +342,8 @@ const WorkoutSetup: React.FC<WorkoutSetupProps> = ({ onComplete }) => {
                                 )}
 
                                 {/* Selected injuries chips */}
-                                {form.planType === 'weekly' && form.injuries.length > 0 && (
-                                    <Box mt="3">
+                                {form.injuries.length > 0 ? (
+                                    <Box mt={form.planType === 'weekly' ? '0' : '3'}>
                                         <Text fontSize="9px" fontWeight="700" color="#E03030" textTransform="uppercase" letterSpacing="wider" mb="2">
                                             {t('workouts.injuriesPain', 'Injuries / Pain')}
                                         </Text>
@@ -354,54 +376,28 @@ const WorkoutSetup: React.FC<WorkoutSetupProps> = ({ onComplete }) => {
                                             })}
                                         </Flex>
                                     </Box>
-                                )}
+                                ) : form.planType === 'weekly' ? (
+                                    <Box p="3" bg="#1e2028" borderRadius="8px" border="1px dashed #2e3040">
+                                        <Text fontSize="11px" color="#8A8A93">
+                                            {t('workouts.noInjuriesNotice', 'No pain areas selected. Your entire body is ready for training!')}
+                                        </Text>
+                                    </Box>
+                                ) : null}
                             </Box>
 
-                            {/* Right: body diagram */}
+                            {/* Right: body diagram & interactive controls */}
                             <Box flex="1" minW="0">
-                                <BodyDiagram selected={form.muscles} onToggle={(id) => toggleMuscle(id)} muscleZones={muscleZones} />
-                                <Flex
-                                    justify="center"
-                                    mt="3"
-                                    align="center"
-                                    gap="2"
-                                    px="4"
-                                    py="2"
-                                    bg="#1e2028"
-                                    borderRadius="full"
-                                    w="fit-content"
-                                    mx="auto"
-                                >
-                                    <Text fontSize="12px" color="#8A8A93">{t('workouts.selectTargetMuscles', 'Select target muscles')}</Text>
-                                </Flex>
-
-                                {/* Also allow clicking muscle chips */}
-                                <Flex flexWrap="wrap" gap="2" justify="center" mt="3">
-                                    {muscleZones.map((z) => (
-                                        <OptionChip
-                                            key={z.id}
-                                            label={z.label}
-                                            selected={form.muscles.includes(z.id)}
-                                            onClick={() => toggleMuscle(z.id)}
-                                        />
-                                    ))}
-                                    <OptionChip
-                                        label={t('workouts.fullBody', 'Full Body')}
-                                        selected={form.muscles.length === muscleZones.length && muscleZones.length > 0}
-                                        onClick={() => {
-                                            setForm((p) => ({
-                                                ...p,
-                                                muscles: p.muscles.length === muscleZones.length ? [] : muscleZones.map((z) => z.id),
-                                            }))
-                                        }}
-                                    />
-                                </Flex>
-
-                                {form.planType === 'weekly' && (
+                                {form.planType === 'weekly' ? (
+                                    /* Weekly mode: Pain & injury selection ONLY */
                                     <>
+                                        <BodyDiagram
+                                            selected={form.injuries.map((i) => i.id)}
+                                            onToggle={(id) => toggleInjury(id)}
+                                            muscleZones={muscleZones}
+                                        />
                                         <Flex
                                             justify="center"
-                                            mt="5"
+                                            mt="3"
                                             align="center"
                                             gap="2"
                                             px="4"
@@ -411,7 +407,9 @@ const WorkoutSetup: React.FC<WorkoutSetupProps> = ({ onComplete }) => {
                                             w="fit-content"
                                             mx="auto"
                                         >
-                                            <Text fontSize="12px" color="#E03030" fontWeight="600">{t('workouts.painQuestion', 'Are you experiencing pain or injury in any muscle group?')}</Text>
+                                            <Text fontSize="12px" color="#E03030" fontWeight="600">
+                                                {t('workouts.painQuestion', 'Are you experiencing pain or injury in any muscle group?')}
+                                            </Text>
                                         </Flex>
 
                                         <Flex flexWrap="wrap" gap="2" justify="center" mt="3">
@@ -424,11 +422,12 @@ const WorkoutSetup: React.FC<WorkoutSetupProps> = ({ onComplete }) => {
                                                             px="3"
                                                             py="1.5"
                                                             borderRadius="full"
-                                                            border="1px solid"
+                                                            border="1.5px solid"
                                                             borderColor={isInjured ? '#E03030' : '#2e3040'}
                                                             bg={isInjured ? 'rgba(224,48,48,0.2)' : 'transparent'}
                                                             color={isInjured ? 'white' : '#8A8A93'}
                                                             fontSize="12px"
+                                                            fontWeight="600"
                                                             cursor="pointer"
                                                             transition="all 0.2s"
                                                             _hover={{ borderColor: '#E03030' }}
@@ -438,10 +437,11 @@ const WorkoutSetup: React.FC<WorkoutSetupProps> = ({ onComplete }) => {
                                                         </Box>
                                                         {isInjured && (
                                                             <HStack mt="2" spacing="1" justify="center">
-                                                                {[1, 2, 3, 4, 5].map(lvl => (
+                                                                {[1, 2, 3, 4, 5].map((lvl) => (
                                                                     <Box
                                                                         key={lvl}
-                                                                        w="18px" h="18px"
+                                                                        w="18px"
+                                                                        h="18px"
                                                                         borderRadius="full"
                                                                         bg={injury.severity >= lvl ? '#E03030' : '#2e3040'}
                                                                         cursor="pointer"
@@ -462,6 +462,53 @@ const WorkoutSetup: React.FC<WorkoutSetupProps> = ({ onComplete }) => {
                                                     </Box>
                                                 )
                                             })}
+                                        </Flex>
+                                    </>
+                                ) : (
+                                    /* Daily mode: Target muscle selection */
+                                    <>
+                                        <BodyDiagram
+                                            selected={form.muscles}
+                                            onToggle={(id) => toggleMuscle(id)}
+                                            muscleZones={muscleZones}
+                                        />
+                                        <Flex
+                                            justify="center"
+                                            mt="3"
+                                            align="center"
+                                            gap="2"
+                                            px="4"
+                                            py="2"
+                                            bg="#1e2028"
+                                            borderRadius="full"
+                                            w="fit-content"
+                                            mx="auto"
+                                        >
+                                            <Text fontSize="12px" color="#8A8A93">
+                                                {t('workouts.selectTargetMuscles', 'Select target muscles')}
+                                            </Text>
+                                        </Flex>
+
+                                        {/* Target muscle chips */}
+                                        <Flex flexWrap="wrap" gap="2" justify="center" mt="3">
+                                            {muscleZones.map((z) => (
+                                                <OptionChip
+                                                    key={z.id}
+                                                    label={z.label}
+                                                    selected={form.muscles.includes(z.id)}
+                                                    onClick={() => toggleMuscle(z.id)}
+                                                />
+                                            ))}
+                                            <OptionChip
+                                                label={t('workouts.fullBody', 'Full Body')}
+                                                selected={form.muscles.length === muscleZones.length && muscleZones.length > 0}
+                                                onClick={() => {
+                                                    setForm((p) => ({
+                                                        ...p,
+                                                        muscles: p.muscles.length === muscleZones.length ? [] : muscleZones.map((z) => z.id),
+                                                    }))
+                                                }}
+                                            />
                                         </Flex>
                                     </>
                                 )}

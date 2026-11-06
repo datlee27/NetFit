@@ -3,25 +3,20 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Text.Json;
-using System.Threading.Tasks;
 using MediatR;
 using FitnessTrainingSystem.Application.DTOs.Workouts;
 using FitnessTrainingSystem.Application.Interfaces;
-using FitnessTrainingSystem.Application.Common.Interfaces;
-using Microsoft.Extensions.Configuration;
+using FitnessTrainingSystem.Application.DTOs.Exercises;
 
 namespace FitnessTrainingSystem.Application.Features.AiRecommendations.Commands.GenerateWeeklyWorkoutPlan;
 
 public class GenerateWeeklyWorkoutPlanCommandHandler : IRequestHandler<GenerateWeeklyWorkoutPlanCommand, AiWeeklyWorkoutPlanResponseDto>
 {
-    private readonly IGroqWorkoutAiService _groqAiService;
     private readonly IExerciseService _exerciseService;
     private readonly IProductPackageService _packageService;
 
-    public GenerateWeeklyWorkoutPlanCommandHandler(IGroqWorkoutAiService groqAiService, IExerciseService exerciseService, IProductPackageService packageService)
+    public GenerateWeeklyWorkoutPlanCommandHandler(IExerciseService exerciseService, IProductPackageService packageService)
     {
-        _groqAiService = groqAiService;
         _exerciseService = exerciseService;
         _packageService = packageService;
     }
@@ -34,49 +29,161 @@ public class GenerateWeeklyWorkoutPlanCommandHandler : IRequestHandler<GenerateW
             throw new UnauthorizedAccessException("Bạn cần đăng ký gói thành viên cao cấp nhất để sử dụng tính năng tư vấn bài tập nguyên tuần.");
         }
 
-        List<AvailableExerciseDto> availableExercises;
-        try
+        var allExercises = (await _exerciseService.GetAllAsync()).ToList();
+        if (!allExercises.Any())
         {
-            var allExercises = await _exerciseService.GetAllAsync();
-            availableExercises = allExercises.Select(e => new AvailableExerciseDto
+            throw new Exception("Không có bài tập nào khả dụng trong hệ thống.");
+        }
+
+        // Parse injured muscle groups (e.g., "Legs (Severity 3/5), Shoulders" -> ["leg", "shoulder", ...])
+        var injuredKeywords = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        if (!string.IsNullOrWhiteSpace(request.InjuredMuscleGroups))
+        {
+            var parts = request.InjuredMuscleGroups.Split(new[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+            foreach (var part in parts)
             {
-                Id = e.Id,
-                Title = e.Title,
-                Description = "", // Omit description to reduce token usage
-                MuscleGroupId = e.MuscleGroupId,
-                MuscleGroupName = e.MuscleGroup,
-                Equipment = "None",
-                DurationMinutes = e.Duration ?? 10,
-                CaloriesBurnPerMin = 5.0,
-                Difficulty = e.Difficulty.ToString()
-            }).ToList();
+                var clean = part.Split('(')[0].Trim().ToLower();
+                if (!string.IsNullOrEmpty(clean))
+                {
+                    injuredKeywords.Add(clean);
+                }
+            }
         }
-        catch (Exception ex)
+
+        bool IsMuscleInjured(string? muscleName)
         {
-            Console.WriteLine($"Database connection failed: {ex.Message}. Using mock exercises for testing...");
-            availableExercises = new List<AvailableExerciseDto>();
+            if (string.IsNullOrEmpty(muscleName)) return false;
+            var lower = muscleName.ToLower();
+            return injuredKeywords.Any(k => lower.Contains(k) || k.Contains(lower));
         }
 
-        // Nếu vẫn trống rỗng (không có bài tập nào cho nhóm cơ này), quăng lỗi
-        if (!availableExercises.Any())
+        // Standard Weekly Split Templates
+        var splitTemplates = new List<(string Title, string Description, string DefaultMuscle, string[] TargetMuscles)>
         {
-            throw new Exception($"Không có bài tập nào khả dụng trong hệ thống cho nhóm cơ '{request.MuscleGroup}'. Vui lòng chọn nhóm cơ khác hoặc thêm bài tập vào hệ thống trước.");
-        }
+            ("Thứ 2: Ngực & Tay sau (Chest & Triceps)", "Tập trung phát triển nhóm cơ ngực và tay sau với các bài đẩy hiệu quả.", "Chest", new[] { "Chest", "Arms" }),
+            ("Thứ 3: Lưng & Tay trước (Back & Biceps)", "Tăng cường sức mạnh lưng xô và bắp tay trước, cải thiện tư thế.", "Back", new[] { "Back", "Arms" }),
+            ("Thứ 4: Chân & Mông (Legs & Lower Body)", "Tập luyện sức mạnh thân dưới, phát triển đùi trước, đùi sau và mông.", "Legs", new[] { "Legs" }),
+            ("Thứ 5: Vai & Cơ bụng (Shoulders & Core)", "Xây dựng bờ vai săn chắc kết hợp siết cơ bụng định hình cơ thể.", "Shoulders", new[] { "Shoulders", "Core" }),
+            ("Thứ 6: Toàn thân & Cardio (Full Body Burn)", "Kích hoạt toàn bộ các nhóm cơ và nâng cao sức bền tim mạch.", "Full Body", new[] { "Full Body", "Core" })
+        };
 
-        // Limit exercises to reduce token count (Groq free tier: 12k TPM)
-        var trimmedExercises = availableExercises
-            .Take(30)
-            .Select(e => new { e.Id, e.Title, e.MuscleGroupName, e.DurationMinutes, e.CaloriesBurnPerMin, e.Difficulty })
-            .ToList();
-        var availableExercisesJson = JsonSerializer.Serialize(trimmedExercises);
+        int dayCount = request.Frequency > 0 ? Math.Clamp(request.Frequency, 3, 5) : 5;
+        var selectedTemplates = splitTemplates.Take(dayCount).ToList();
 
-        var aiResult = await _groqAiService.GenerateWeeklyWorkoutPlanAsync(request.UserId, request.MuscleGroup, request.TargetCaloriesPerDay, request.DurationMinutesPerDay, request.Frequency, availableExercisesJson, request.InjuredMuscleGroups);
+        // Warmup exercises available
+        var warmupExercises = allExercises.Where(e =>
+            e.Title.Contains("warm", StringComparison.OrdinalIgnoreCase) ||
+            e.Title.Contains("khởi động", StringComparison.OrdinalIgnoreCase) ||
+            e.Title.Contains("stretch", StringComparison.OrdinalIgnoreCase) ||
+            e.Title.Contains("giãn", StringComparison.OrdinalIgnoreCase)
+        ).ToList();
 
-        if (aiResult == null || !aiResult.Success)
+        var weeklyDays = new List<WorkoutPlanOutput>();
+        int dayIndex = 0;
+
+        foreach (var tpl in selectedTemplates)
         {
-            throw new Exception("Xử lý tạo lịch tập tuần từ Gemini AI thất bại hoặc dữ liệu trả về bị rỗng.");
+            dayIndex++;
+            var dayTitle = tpl.Title;
+            var dayDesc = tpl.Description;
+            var targetMuscles = tpl.TargetMuscles.Where(m => !IsMuscleInjured(m)).ToArray();
+
+            // If all target muscles for this day are injured, adapt to active recovery
+            bool isAllInjured = targetMuscles.Length == 0;
+            if (isAllInjured)
+            {
+                dayTitle = $"Thứ {dayIndex + 1}: Phục hồi & Giãn cơ (Active Recovery)";
+                dayDesc = "Tập các bài kéo giãn nhẹ nhàng và phục hồi chức năng, tránh tác động vào vùng chấn thương.";
+                targetMuscles = new[] { "Full Body", "Core" };
+            }
+
+            // Pick warmup exercise (avoiding injured muscles)
+            var warmup = warmupExercises
+                .Where(w => !IsMuscleInjured(w.MuscleGroup))
+                .OrderBy(_ => Guid.NewGuid())
+                .FirstOrDefault();
+
+            // Pick 4-5 main exercises for this day
+            int exercisesToTake = warmup != null ? 4 : 5;
+            var candidateExercises = allExercises
+                .Where(e => warmup == null || e.Id != warmup.Id)
+                .Where(e => !IsMuscleInjured(e.MuscleGroup))
+                .Where(e => targetMuscles.Any(tm => string.Equals(e.MuscleGroup, tm, StringComparison.OrdinalIgnoreCase)))
+                .OrderBy(_ => Guid.NewGuid())
+                .Take(exercisesToTake)
+                .ToList();
+
+            // If not enough, fill with non-injured Full Body or Core exercises
+            if (candidateExercises.Count < exercisesToTake)
+            {
+                var currentIds = candidateExercises.Select(x => x.Id).ToHashSet();
+                if (warmup != null) currentIds.Add(warmup.Id);
+
+                var fallbackExercises = allExercises
+                    .Where(e => !currentIds.Contains(e.Id) && !IsMuscleInjured(e.MuscleGroup))
+                    .OrderBy(_ => Guid.NewGuid())
+                    .Take(exercisesToTake - candidateExercises.Count);
+
+                candidateExercises.AddRange(fallbackExercises);
+            }
+
+            var finalExercisesForDay = new List<ExerciseDto>();
+            if (warmup != null)
+            {
+                finalExercisesForDay.Add(warmup);
+            }
+            finalExercisesForDay.AddRange(candidateExercises);
+
+            var exerciseItems = new List<ExerciseItemOutput>();
+            int order = 1;
+            decimal dayCalories = 0;
+            int dayDuration = 0;
+
+            foreach (var ex in finalExercisesForDay)
+            {
+                int sets = 3;
+                int reps = 12;
+                int durationSecs = 60;
+                int restSecs = 30;
+                int exDurationMins = (durationSecs + restSecs) * sets / 60;
+                decimal caloriesBurnPerMin = 5.0m;
+                decimal calsBurned = exDurationMins * caloriesBurnPerMin;
+
+                exerciseItems.Add(new ExerciseItemOutput
+                {
+                    ExerciseId = ex.Id,
+                    ExerciseTitle = ex.Title,
+                    Sets = sets,
+                    Reps = reps,
+                    DurationSeconds = durationSecs,
+                    RestSeconds = restSecs,
+                    ExerciseOrder = order++,
+                    CaloriesBurned = calsBurned
+                });
+
+                dayCalories += calsBurned;
+                dayDuration += exDurationMins;
+            }
+
+            weeklyDays.Add(new WorkoutPlanOutput
+            {
+                Title = dayTitle,
+                Goal = dayDesc,
+                TargetDurationMinutes = dayDuration > 0 ? dayDuration : (request.DurationMinutesPerDay > 0 ? request.DurationMinutesPerDay : 45),
+                TargetCalories = dayCalories > 0 ? dayCalories : (request.TargetCaloriesPerDay > 0 ? request.TargetCaloriesPerDay : 300),
+                Exercises = exerciseItems
+            });
         }
 
-        return aiResult;
+        return new AiWeeklyWorkoutPlanResponseDto
+        {
+            Success = true,
+            UserId = request.UserId,
+            Model = "RuleBased-WeeklyEngine",
+            Recommendation = new WeeklyWorkoutPlanOutput
+            {
+                Days = weeklyDays
+            }
+        };
     }
 }
