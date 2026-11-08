@@ -17,7 +17,7 @@ lsof -i :3306
 ```
 > **Thông tin kết nối DB:**  
 > - User: `root`  
-> - Password: `Levandat2004^` (hoặc mật khẩu trong file `.env`)  
+> - Password: `<YOUR_MYSQL_PASSWORD>` (hoặc mật khẩu trong file `.env`)  
 > - Database name: `FitnessProject`  
 
 ---

@@ -76,9 +76,9 @@ Mở file `backend/.env` của bạn lên và copy đoạn sau chèn vào cuối
 # ===========================
 SMTP_HOST=smtp.gmail.com
 SMTP_PORT=587
-SMTP_USER=hoanglan1912a@gmail.com
-SMTP_PASS=jhhu uvku klql zxyu
-SMTP_FROM=NETFIT <hoanglan1912a@gmail.com>
+SMTP_USER=your_email@gmail.com
+SMTP_PASS=your_gmail_app_password
+SMTP_FROM=NETFIT <your_email@gmail.com>
 SMTP_ENABLE_SSL=true
 
 # OTP Configs

@@ -1500,7 +1500,7 @@ Toàn bộ file cấu hình `appsettings.json`, DDL sửa bảng `emailotp`, cod
 #### 4.4. Phần sinh viên/nhóm tự chỉnh sửa hoặc cải tiến
 
 ```text
-Cung cấp file SQL chuẩn (`fullsql.sql` + `data.sql`), thông tin mật khẩu MySQL local (`Levandat2004^`) và kiểm thử trực tiếp luồng gửi OTP qua Gmail thực tế.
+Cung cấp file SQL chuẩn (`fullsql.sql` + `data.sql`), cấu hình môi trường MySQL local và kiểm thử trực tiếp luồng gửi OTP qua Gmail thực tế.
 ```
 
 #### 4.5. Minh chứng
