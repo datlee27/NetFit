@@ -45,3 +45,7 @@ docs/superpowers_guide.md
 **/venv/
 **/__pycache__/
 *.pyc
+
+# Local runtime PIDs
+*.pid
+.netfit_*.pid

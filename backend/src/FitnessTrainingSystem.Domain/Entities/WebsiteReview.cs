@@ -8,7 +8,7 @@ public class WebsiteReview : BaseEntity
     public int Rating { get; set; } // 1 - 5 stars
     public string? Comment { get; set; }
     public bool IsHidden { get; set; } = false;
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow.AddHours(7);
     public DateTime? UpdatedAt { get; set; }
 
     // Navigation property

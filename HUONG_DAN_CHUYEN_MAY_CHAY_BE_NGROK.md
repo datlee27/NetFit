@@ -79,16 +79,16 @@ git checkout main
 2. Mở file `backend/.env` bằng VS Code hoặc Notepad:
    - Tìm dòng đầu tiên:
      ```env
-     ConnectionStrings__DefaultConnection=Server=localhost;Port=3306;Database=fitnessproject;User=root;Password=Levandat2004^;
+     ConnectionStrings__DefaultConnection=Server=localhost;Port=3306;Database=fitnessproject;User=root;Password=YOUR_DATABASE_PASSWORD;
      ```
-   - **Thay đổi mật khẩu:** Sửa `Levandat2004^` thành **mật khẩu root MySQL của máy mới**.
-   - Các dòng khác (JWT, Google OAuth, Gmail SMTP OTP, Gemini API Key, Cloudinary...) giữ nguyên theo file mẫu vì đã được điền sẵn chính xác.
+   - **Thay đổi mật khẩu:** Sửa `YOUR_DATABASE_PASSWORD` thành **mật khẩu root MySQL của máy mới**.
+   - Các dòng khác (JWT, Google OAuth, Gmail SMTP OTP, Gemini API Key, Cloudinary...) cấu hình tương ứng trong file `.env`.
 3. Lưu file `backend/.env`.
 
 ---
 
 ### Bước 5: Cấu hình Ngrok với Domain Mới (Máy 24/7)
-Tài khoản Ngrok trên máy mới (`lvd27012004@gmail.com`) phát hành URL:
+Tài khoản Ngrok trên máy mới phát hành URL:
 `https://quantum-swooned-thousand.ngrok-free.dev`
 
 1. **Thêm Authtoken tài khoản Ngrok vào máy mới:**

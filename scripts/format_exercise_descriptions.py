@@ -13,9 +13,9 @@ import subprocess
 import os
 
 # Cấu hình DB cục bộ
-DB_USER = "root"
-DB_PASS = "Levandat2004^"
-DB_NAME = "fitnessproject"
+DB_USER = os.getenv("DB_USER", "root")
+DB_PASS = os.getenv("DB_PASS", "YOUR_DB_PASSWORD")
+DB_NAME = os.getenv("DB_NAME", "fitnessproject")
 
 # Hướng dẫn chi tiết cho các bài tập khởi động / đặc biệt có 1 câu ngắn
 SPECIAL_EXERCISES = {
